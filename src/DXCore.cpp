@@ -38,5 +38,50 @@ void DXCore::init(int width, int height, HWND hwnd, bool window_fullscreen)
 		&devicecontext);
 
 	swapchain->SetFullscreenState(window_fullscreen, NULL);
+	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backbuffer);
+	device->CreateRenderTargetView(backbuffer, NULL, &backbufferRenderTargetView);
 
+	D3D11_TEXTURE2D_DESC dsvDesc;
+	dsvDesc.Width = width;
+	dsvDesc.Height = height;
+	dsvDesc.MipLevels = 1;
+	dsvDesc.ArraySize = 1;
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	dsvDesc.SampleDesc.Count = 1;
+	dsvDesc.SampleDesc.Quality = 0;
+	dsvDesc.Usage = D3D11_USAGE_DEFAULT;
+	dsvDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	dsvDesc.CPUAccessFlags = 0;
+	dsvDesc.MiscFlags = 0;
+
+	device->CreateTexture2D(&dsvDesc, NULL, &depthbuffer);
+	device->CreateDepthStencilView(depthbuffer, NULL, &depthStencilView);
+
+	devicecontext->OMSetRenderTargets(1, &backbufferRenderTargetView, depthStencilView);
+
+	D3D11_VIEWPORT viewport;
+
+	viewport.Width = (float)width;
+	viewport.Height = (float)height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	devicecontext->RSSetViewports(1, &viewport);
+
+}
+
+void DXCore::clear()
+{
+	float ClearColour[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	devicecontext->ClearRenderTargetView(backbufferRenderTargetView, ClearColour);
+	devicecontext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+		1.0f,
+		0);
+
+}
+
+void DXCore::present()
+{
+	swapchain->Present(0, 0);
 }
