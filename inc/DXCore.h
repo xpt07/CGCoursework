@@ -11,7 +11,7 @@ public:
 	ID3D11Texture2D* backbuffer;
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11Texture2D* depthbuffer;
-
+	ID3D11RasterizerState* rasterizerState;
 
 	void init(int width, int height, HWND hwnd, bool window_fullscreen);
 	void clear();

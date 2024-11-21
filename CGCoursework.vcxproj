@@ -121,7 +121,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -129,13 +129,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\Adapter.h" />
+    <ClInclude Include="inc\core.h" />
     <ClInclude Include="inc\DXCore.h" />
+    <ClInclude Include="inc\Mesh.h" />
+    <ClInclude Include="inc\Shaders.h" />
     <ClInclude Include="inc\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Adapter.cpp" />
     <ClCompile Include="src\DXCore.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
