@@ -69,6 +69,14 @@ void DXCore::init(int width, int height, HWND hwnd, bool window_fullscreen)
 	viewport.TopLeftY = 0;
 	devicecontext->RSSetViewports(1, &viewport);
 
+	D3D11_RASTERIZER_DESC rsdesc;
+	ZeroMemory(&rsdesc, sizeof(D3D11_RASTERIZER_DESC));
+	rsdesc.FillMode = D3D11_FILL_SOLID;
+	rsdesc.CullMode = D3D11_CULL_NONE;
+	device->CreateRasterizerState(&rsdesc, &rasterizerState);
+
+	devicecontext->RSSetState(rasterizerState);
+
 }
 
 void DXCore::clear()
