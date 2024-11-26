@@ -25,8 +25,8 @@ public:
 
 	std::string readFile(std::string filename);
 
-	void compileVS(std::string VS_file, DXCore& core);
-	void compilePS(std::string PS_file, DXCore& core);
+	ID3DBlob* compileVS(std::string VS_file, DXCore& core);
+	ID3DBlob* compilePS(std::string PS_file, DXCore& core);
 
 	void updateConstant(std::string constantBufferName, std::string variableName, void* data, std::vector<ConstantBuffer>& buffers)
 	{

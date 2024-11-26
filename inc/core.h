@@ -271,17 +271,17 @@ public:
     }
 };
 
-vec3 Cross(const vec3& v1, const vec3& v2)
-{
-    return vec3(v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1],
-        v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2],
-        v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0]);
-}
-
-float Dot(const vec3& v1, const vec3& v2)
-{
-    return v1.v[0] * v2.v[0] + v1.v[1] * v2.v[1] + v1.v[2] * v2.v[2];
-}
+//vec3 Cross(const vec3& v1, const vec3& v2)
+//{
+//    return vec3(v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1],
+//        v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2],
+//        v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0]);
+//}
+//
+//float Dot(const vec3& v1, const vec3& v2)
+//{
+//    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+//}
 
 class vec4 {
 public:
@@ -567,7 +567,7 @@ public:
         mat.m[5] = ct;
     }
 
-    static Matrix lookAt(vec3 _from, vec3 _to, vec3 _up) {
+    /*static Matrix lookAt(vec3 _from, vec3 _to, vec3 _up) {
         vec3 forward = (_from - _to).normalize();
         vec3 right = Cross(_up, forward);
         vec3 up = Cross(forward, right);
@@ -591,7 +591,7 @@ public:
         mat.a[2][3] = -_from.dot(forward);
 
         return mat;
-    }
+    }*/
 };
 
 class Quaternion {
