@@ -1,5 +1,5 @@
 #include "../inc/Window.h"
-#include "../inc/Mesh.h"
+#include "../inc/Geometry.h"
 #include "../inc/Shaders.h"
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {

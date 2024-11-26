@@ -131,7 +131,10 @@
     <ClInclude Include="inc\Adapter.h" />
     <ClInclude Include="inc\core.h" />
     <ClInclude Include="inc\DXCore.h" />
+    <ClInclude Include="inc\Geometry.h" />
     <ClInclude Include="inc\Mesh.h" />
+    <ClInclude Include="inc\ShaderManager.h" />
+    <ClInclude Include="inc\ShaderReflection.h" />
     <ClInclude Include="inc\Shaders.h" />
     <ClInclude Include="inc\Window.h" />
   </ItemGroup>
@@ -139,9 +142,14 @@
     <ClCompile Include="src\Adapter.cpp" />
     <ClCompile Include="src\DXCore.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\ShaderManager.cpp" />
     <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PShader2.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
