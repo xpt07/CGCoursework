@@ -10,6 +10,8 @@
 #define min(a,b) (a < b ? a : b)
 constexpr auto CANVAS_WIDTH = 1024;
 constexpr auto CANVAS_HEIGHT = 768;
+constexpr double M_PI = 3.14159265358979323846;
+
 
 using namespace std;
 
@@ -142,6 +144,14 @@ public:
         return v[0] * pVec.v[0] + v[1] * pVec.v[1] + v[2] * pVec.v[2];
     }
 
+    vec3 cross(const vec3& v) const {
+        return vec3(
+            y * v.z - z * v.y,
+            z * v.x - x * v.z,
+            x * v.y - y * v.x
+        );
+    }
+
     // Max and Min methods
     vec3 Max(const vec3& v1, const vec3& v2)
     {
@@ -270,18 +280,6 @@ public:
         std::cout << "vec4(" << x << ", " << y << ", " << z << ", " << ")\n";
     }
 };
-
-//vec3 Cross(const vec3& v1, const vec3& v2)
-//{
-//    return vec3(v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1],
-//        v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2],
-//        v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0]);
-//}
-//
-//float Dot(const vec3& v1, const vec3& v2)
-//{
-//    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-//}
 
 class vec4 {
 public:
@@ -567,31 +565,32 @@ public:
         mat.m[5] = ct;
     }
 
-    /*static Matrix lookAt(vec3 _from, vec3 _to, vec3 _up) {
-        vec3 forward = (_from - _to).normalize();
-        vec3 right = Cross(_up, forward);
-        vec3 up = Cross(forward, right);
+    static Matrix lookAt(const vec3& eye, const vec3& target, const vec3& up) {
+        vec3 zAxis = (eye - target).normalize();
+        vec3 xAxis = up.cross(zAxis).normalize();
+        vec3 yAxis = zAxis.cross(xAxis);
 
         Matrix mat;
-
-        mat.a[0][0] = right.x;
-        mat.a[0][1] = right.y;
-        mat.a[0][2] = right.z;
-
-        mat.a[1][0] = up.x;
-        mat.a[1][1] = up.y;
-        mat.a[1][2] = up.z;
-
-        mat.a[2][0] = forward.x;
-        mat.a[2][1] = forward.y;
-        mat.a[2][2] = forward.z;
-
-        mat.a[0][3] = -_from.dot(right);
-        mat.a[1][3] = -_from.dot(up);
-        mat.a[2][3] = -_from.dot(forward);
-
+        mat.identity();
+        mat.a[0][0] = xAxis.x; mat.a[0][1] = yAxis.x; mat.a[0][2] = zAxis.x; mat.a[0][3] = -eye.dot(xAxis);
+        mat.a[1][0] = xAxis.y; mat.a[1][1] = yAxis.y; mat.a[1][2] = zAxis.y; mat.a[1][3] = -eye.dot(yAxis);
+        mat.a[2][0] = xAxis.z; mat.a[2][1] = yAxis.z; mat.a[2][2] = zAxis.z; mat.a[2][3] = -eye.dot(zAxis);
         return mat;
-    }*/
+    }
+
+    static Matrix perspectiveFovLH(float fov, float aspect, float nearZ, float farZ) {
+        Matrix mat;
+        mat.identity();
+        float yScale = 1.0f / tanf(fov / 2.0f);
+        float xScale = yScale / aspect;
+        mat.a[0][0] = xScale;
+        mat.a[1][1] = yScale;
+        mat.a[2][2] = farZ / (farZ - nearZ);
+        mat.a[2][3] = 1.0f;
+        mat.a[3][2] = -nearZ * farZ / (farZ - nearZ);
+        mat.a[3][3] = 0.0f;
+        return mat;
+    }
 };
 
 class Quaternion {
