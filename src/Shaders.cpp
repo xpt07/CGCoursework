@@ -13,6 +13,7 @@ void Shaders::compileVS(std::string VS_file, DXCore& core)
 
 	ID3DBlob* compiledVertexShader = nullptr;
 	ID3DBlob* status = nullptr;
+
 	HRESULT hr = D3DCompile(VS_file.c_str(),
 		strlen(VS_file.c_str()),
 		NULL,
@@ -45,10 +46,14 @@ void Shaders::compileVS(std::string VS_file, DXCore& core)
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	core.device->CreateInputLayout(layoutDesc, 4, compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), &layout);
+	core.device->CreateInputLayout(layoutDesc, 
+		4, 
+		compiledVertexShader->GetBufferPointer(), 
+		compiledVertexShader->GetBufferSize(), 
+		&layout);
 
 	ConstantBufferReflection reflection;
-	reflection.build(core, compiledVertexShader, psConstantBuffers, textureBindPointsPS, ShaderStage::VertexShader);
+	reflection.build(core, compiledVertexShader, vsConstantBuffers, textureBindPointsVS, ShaderStage::VertexShader);
 }
 
 void Shaders::compilePS(std::string PS_file, DXCore& core)

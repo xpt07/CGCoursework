@@ -134,6 +134,7 @@
     <ClInclude Include="inc\Geometry.h" />
     <ClInclude Include="inc\ShaderReflection.h" />
     <ClInclude Include="inc\Shaders.h" />
+    <ClInclude Include="inc\Timer.h" />
     <ClInclude Include="inc\Window.h" />
   </ItemGroup>
   <ItemGroup>

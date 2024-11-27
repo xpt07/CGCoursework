@@ -174,7 +174,7 @@ public:
     }
 
     // Normalization methods
-    vec3 normalize() {
+     vec3 normalize() const{
         float lenSq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
         if (lenSq == 0.0f) return *this;  // Return unchanged if the vector is zero-length
         float len = 1.0f / sqrtf(lenSq);
@@ -484,22 +484,25 @@ public:
     Matrix mul(const Matrix& matrix) const
     {
         Matrix ret;
-        ret.m[0] = m[0] * matrix.m[0] + m[4] * matrix.m[1] + m[8] * matrix.m[2] + m[12] * matrix.m[3];
-        ret.m[1] = m[1] * matrix.m[0] + m[5] * matrix.m[1] + m[9] * matrix.m[2] + m[13] * matrix.m[3];
-        ret.m[2] = m[2] * matrix.m[0] + m[6] * matrix.m[1] + m[10] * matrix.m[2] + m[14] * matrix.m[3];
-        ret.m[3] = m[3] * matrix.m[0] + m[7] * matrix.m[1] + m[11] * matrix.m[2] + m[15] * matrix.m[3];
-        ret.m[4] = m[0] * matrix.m[4] + m[4] * matrix.m[5] + m[8] * matrix.m[6] + m[12] * matrix.m[7];
-        ret.m[5] = m[1] * matrix.m[4] + m[5] * matrix.m[5] + m[9] * matrix.m[6] + m[13] * matrix.m[7];
-        ret.m[6] = m[2] * matrix.m[4] + m[6] * matrix.m[5] + m[10] * matrix.m[6] + m[14] * matrix.m[7];
-        ret.m[7] = m[3] * matrix.m[4] + m[7] * matrix.m[5] + m[11] * matrix.m[6] + m[15] * matrix.m[7];
-        ret.m[8] = m[0] * matrix.m[8] + m[4] * matrix.m[9] + m[8] * matrix.m[10] + m[12] * matrix.m[11];
-        ret.m[9] = m[1] * matrix.m[8] + m[5] * matrix.m[9] + m[9] * matrix.m[10] + m[13] * matrix.m[11];
-        ret.m[10] = m[2] * matrix.m[8] + m[6] * matrix.m[9] + m[10] * matrix.m[10] + m[14] * matrix.m[11];
-        ret.m[11] = m[3] * matrix.m[8] + m[7] * matrix.m[9] + m[11] * matrix.m[10] + m[15] * matrix.m[11];
-        ret.m[12] = m[0] * matrix.m[12] + m[4] * matrix.m[13] + m[8] * matrix.m[14] + m[12] * matrix.m[15];
-        ret.m[13] = m[1] * matrix.m[12] + m[5] * matrix.m[13] + m[9] * matrix.m[14] + m[13] * matrix.m[15];
-        ret.m[14] = m[2] * matrix.m[12] + m[6] * matrix.m[13] + m[10] * matrix.m[14] + m[14] * matrix.m[15];
-        ret.m[15] = m[3] * matrix.m[12] + m[7] * matrix.m[13] + m[11] * matrix.m[14] + m[15] * matrix.m[15];
+        ret.m[0] = m[0] * matrix.m[0] + m[1] * matrix.m[4] + m[2] * matrix.m[8] + m[3] * matrix.m[12];
+        ret.m[1] = m[0] * matrix.m[1] + m[1] * matrix.m[5] + m[2] * matrix.m[9] + m[3] * matrix.m[13];
+        ret.m[2] = m[0] * matrix.m[2] + m[1] * matrix.m[6] + m[2] * matrix.m[10] + m[3] * matrix.m[14];
+        ret.m[3] = m[0] * matrix.m[3] + m[1] * matrix.m[7] + m[2] * matrix.m[11] + m[3] * matrix.m[15];
+
+        ret.m[4] = m[4] * matrix.m[0] + m[5] * matrix.m[4] + m[6] * matrix.m[8] + m[7] * matrix.m[12];
+        ret.m[5] = m[4] * matrix.m[1] + m[5] * matrix.m[5] + m[6] * matrix.m[9] + m[7] * matrix.m[13];
+        ret.m[6] = m[4] * matrix.m[2] + m[5] * matrix.m[6] + m[6] * matrix.m[10] + m[7] * matrix.m[14];
+        ret.m[7] = m[4] * matrix.m[3] + m[5] * matrix.m[7] + m[6] * matrix.m[11] + m[7] * matrix.m[15];
+
+        ret.m[8] = m[8] * matrix.m[0] + m[9] * matrix.m[4] + m[10] * matrix.m[8] + m[11] * matrix.m[12];
+        ret.m[9] = m[8] * matrix.m[1] + m[9] * matrix.m[5] + m[10] * matrix.m[9] + m[11] * matrix.m[13];
+        ret.m[10] = m[8] * matrix.m[2] + m[9] * matrix.m[6] + m[10] * matrix.m[10] + m[11] * matrix.m[14];
+        ret.m[11] = m[8] * matrix.m[3] + m[9] * matrix.m[7] + m[10] * matrix.m[11] + m[11] * matrix.m[15];
+
+        ret.m[12] = m[12] * matrix.m[0] + m[13] * matrix.m[4] + m[14] * matrix.m[8] + m[15] * matrix.m[12];
+        ret.m[13] = m[12] * matrix.m[1] + m[13] * matrix.m[5] + m[14] * matrix.m[9] + m[15] * matrix.m[13];
+        ret.m[14] = m[12] * matrix.m[2] + m[13] * matrix.m[6] + m[14] * matrix.m[10] + m[15] * matrix.m[14];
+        ret.m[15] = m[12] * matrix.m[3] + m[13] * matrix.m[7] + m[14] * matrix.m[11] + m[15] * matrix.m[15];
         return ret;
     }
 
@@ -565,32 +568,75 @@ public:
         mat.m[5] = ct;
     }
 
-    static Matrix lookAt(const vec3& eye, const vec3& target, const vec3& up) {
-        vec3 zAxis = (eye - target).normalize();
-        vec3 xAxis = up.cross(zAxis).normalize();
-        vec3 yAxis = zAxis.cross(xAxis);
+    Matrix Projection(float _fov, float _aspect, float _near, float _far)
+    {
+        float dFov = _fov * M_PI / 180; // contains conversion from degree
+        float tanHalfFov = tan(_fov / 2);
+        Matrix _mat;
+        _mat.m[0] = 1.0f / (_aspect * tanHalfFov);
+        _mat.m[5] = -1.0f / tanHalfFov;
+        _mat.m[10] = -_far / (_far - _near);
+        _mat.m[11] = -(_far * _near) / (_far - _near);
+        _mat.m[14] = -1.0f;
+        _mat.m[15] = 0.0f;
+
+        return _mat;
+    }
+
+    Matrix LookAt(vec3 _from, vec3 _to, vec3 _up)
+    {
+        vec3 forward = (_from - _to).normalize();
+        vec3 right =_up.cross(forward);
+        vec3 up = forward.cross(right);
 
         Matrix mat;
-        mat.identity();
-        mat.a[0][0] = xAxis.x; mat.a[0][1] = yAxis.x; mat.a[0][2] = zAxis.x; mat.a[0][3] = -eye.dot(xAxis);
-        mat.a[1][0] = xAxis.y; mat.a[1][1] = yAxis.y; mat.a[1][2] = zAxis.y; mat.a[1][3] = -eye.dot(yAxis);
-        mat.a[2][0] = xAxis.z; mat.a[2][1] = yAxis.z; mat.a[2][2] = zAxis.z; mat.a[2][3] = -eye.dot(zAxis);
+
+        mat.a[0][0] = right.x;
+        mat.a[0][1] = right.y;
+        mat.a[0][2] = right.z;
+
+        mat.a[1][0] = up.x;
+        mat.a[1][1] = up.y;
+        mat.a[1][2] = up.z;
+
+        mat.a[2][0] = forward.x;
+        mat.a[2][1] = forward.y;
+        mat.a[2][2] = forward.z;
+
+        mat.a[0][3] = -_from.dot(right);
+        mat.a[1][3] = -_from.dot(up);
+        mat.a[2][3] = -_from.dot(forward);
+
         return mat;
     }
 
-    static Matrix perspectiveFovLH(float fov, float aspect, float nearZ, float farZ) {
+    Matrix View(vec3 _pos, vec3 _forward)
+    {
+        _forward = _forward.normalize();
+        vec3 right = vec3(0, 1, 0).cross(_forward);
+        vec3 up = _forward.cross(right);
+
         Matrix mat;
-        mat.identity();
-        float yScale = 1.0f / tanf(fov / 2.0f);
-        float xScale = yScale / aspect;
-        mat.a[0][0] = xScale;
-        mat.a[1][1] = yScale;
-        mat.a[2][2] = farZ / (farZ - nearZ);
-        mat.a[2][3] = 1.0f;
-        mat.a[3][2] = -nearZ * farZ / (farZ - nearZ);
-        mat.a[3][3] = 0.0f;
+
+        mat.a[0][0] = right.x;
+        mat.a[1][0] = right.y;
+        mat.a[2][0] = right.z;
+
+        mat.a[0][1] = up.x;
+        mat.a[1][1] = up.y;
+        mat.a[2][1] = up.z;
+
+        mat.a[0][2] = -_forward.x;
+        mat.a[1][2] = -_forward.y;
+        mat.a[2][2] = -_forward.z;
+
+        mat.a[0][3] = -(_pos.dot(right));
+        mat.a[1][3] = -(_pos.dot(up));
+        mat.a[2][3] = _pos.dot(_forward);
+
         return mat;
     }
+
 };
 
 class Quaternion {

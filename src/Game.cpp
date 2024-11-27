@@ -1,6 +1,7 @@
 #include "../inc/Window.h"
 #include "../inc/Geometry.h"
 #include "../inc/Shaders.h"
+#include "../inc/Timer.h"
 #include "../inc/core.h"
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
@@ -8,22 +9,27 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     Window win;
     Plane plane;
     Shaders shader;
+    Timer timer;
 
     win.init(1024, 1024, "3D Plane");
     dx.init(win.width, win.height, win.hwnd, false);
     plane.init(dx);
-    shader.init("C:/Users/u5632744/Desktop/Computer Graphics/CGCoursework/VertexShader.hlsl", "C:/Users/u5632744/Desktop/Computer Graphics/CGCoursework/PixelShader.hlsl", dx);
+    shader.init("VertexShader.hlsl", "PixelShader.hlsl", dx);
 
-    Matrix worldMatrix = Matrix();
-    Matrix viewMatrix = Matrix::lookAt(vec3(0, 20, 30), vec3(0, 0, 0), vec3(0, 1, 0));
-    Matrix projMatrix = Matrix::perspectiveFovLH(M_PI / 4.0f, 1024.0f / 768.0f, 0.1f, 100.0f);
-    Matrix vpMatrix = viewMatrix.mul(projMatrix);
+    Matrix planeWorld = Matrix();
 
     while (true) {
+        float t = timer.elapsed();
+
+        vec3 from = vec3(11 * cos(t), 5, 11 * sinf(t)); // Update camera position
+        Matrix view = view.LookAt(from, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+        Matrix projection = projection.Projection(M_PI / 4.0f, float(win.width) / win.height, 0.1f, 100.0f);
+        Matrix VP = projection.mul(view);
+
         dx.clear();
 
-        shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
-        shader.updateConstantVS("staticMeshBuffer", "VP", &vpMatrix);
+        shader.updateConstantVS("staticMeshBuffer", "W", &planeWorld);
+        shader.updateConstantVS("staticMeshBuffer", "VP", &VP);
 
         shader.apply(dx);
         plane.geometry.draw(dx);

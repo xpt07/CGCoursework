@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CGCoursework", "CGCoursework.vcxproj", "{09945A30-B0AD-47F2-A56B-BE747EAFADEF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math-Tests", "Math-Tests\Math-Tests.vcxproj", "{2F1CAD44-972D-462D-B541-A38240A07D00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{09945A30-B0AD-47F2-A56B-BE747EAFADEF}.Release|x64.Build.0 = Release|x64
 		{09945A30-B0AD-47F2-A56B-BE747EAFADEF}.Release|x86.ActiveCfg = Release|Win32
 		{09945A30-B0AD-47F2-A56B-BE747EAFADEF}.Release|x86.Build.0 = Release|Win32
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Debug|x64.ActiveCfg = Debug|x64
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Debug|x64.Build.0 = Debug|x64
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Debug|x86.ActiveCfg = Debug|Win32
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Debug|x86.Build.0 = Debug|Win32
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Release|x64.ActiveCfg = Release|x64
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Release|x64.Build.0 = Release|x64
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Release|x86.ActiveCfg = Release|Win32
+		{2F1CAD44-972D-462D-B541-A38240A07D00}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

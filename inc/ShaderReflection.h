@@ -124,5 +124,6 @@ public:
 				textureBindPoints.insert({ bindDesc.Name, bindDesc.BindPoint });
 			}
 		}
+
 	}
 };

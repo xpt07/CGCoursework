@@ -64,7 +64,9 @@ public:
 		vertices.push_back(addVertex(vec3(15, 0, -15), vec3(0, 1, 0), 1, 0));
 		vertices.push_back(addVertex(vec3(-15, 0, 15), vec3(0, 1, 0), 0, 1));
 		vertices.push_back(addVertex(vec3(15, 0, 15), vec3(0, 1, 0), 1, 1));
-		std::vector<unsigned int> indices = { 2, 1, 0, 1, 2, 3 };
+		std::vector<unsigned int> indices;
+		indices.push_back(2); indices.push_back(1); indices.push_back(0);
+		indices.push_back(1); indices.push_back(2); indices.push_back(3);
 		geometry.init(vertices, indices, core);
 
 	}
