@@ -19,9 +19,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     Cube cube;
     cube.init(dx);
 
+    Sphere sphere;
+    sphere.init(20, 20, 2.0f, dx);
+
     shader.init("VertexShader.hlsl", "PixelShader.hlsl", dx);
 
-    Matrix planeWorld = Matrix();
+    Matrix worldMatrix = Matrix();
 
     while (true) {
         float t = timer.elapsed();
@@ -33,11 +36,32 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
         dx.clear();
 
+        // Draw Plane
+        Matrix planeWorld = Matrix::translation(vec3(0, -1, 0)); // Place the plane below the cubes
         shader.updateConstantVS("staticMeshBuffer", "W", &planeWorld);
-        shader.updateConstantVS("staticMeshBuffer", "VP", &VP);
 
         shader.apply(dx);
+        plane.geometry.draw(dx);
+
+        // Draw First Cube
+        Matrix cube1World = Matrix::translation(vec3(0, 1, 0)); // Centered at origin
+        shader.updateConstantVS("staticMeshBuffer", "W", &cube1World);
+        shader.apply(dx);
         cube.geometry.draw(dx);
+
+        // Draw Second Cube
+        Matrix cube2World = Matrix::translation(vec3(3, 1, 0)); // Offset to the right
+        shader.updateConstantVS("staticMeshBuffer", "W", &cube2World);
+        shader.apply(dx);
+        cube.geometry.draw(dx);
+
+        // Draw Sphere
+        Matrix sphereWorld = Matrix::translation(vec3(-3, 1, 0)); // Offset to the left
+        shader.updateConstantVS("staticMeshBuffer", "W", &sphereWorld);
+        shader.apply(dx);
+        sphere.geometry.draw(dx);
+
+        shader.updateConstantVS("staticMeshBuffer", "VP", &VP);
 
         win.processMessages();
         dx.present();

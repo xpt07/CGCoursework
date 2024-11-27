@@ -568,14 +568,17 @@ public:
         mat.m[5] = ct;
     }
 
-    Matrix Projection(float _fov, float _aspect, float _near, float _far)
+    static Matrix Projection(float _fov, float _aspect, float _near, float _far)
     {
         float dFov = _fov * M_PI / 180; // contains conversion from degree
         float tanHalfFov = tan(_fov / 2);
+
         Matrix _mat;
+
         _mat.m[0] = 1.0f / (_aspect * tanHalfFov);
-        _mat.m[5] = -1.0f / tanHalfFov;
+        _mat.m[5] = 1.0f / tanHalfFov;
         _mat.m[10] = -_far / (_far - _near);
+
         _mat.m[11] = -(_far * _near) / (_far - _near);
         _mat.m[14] = -1.0f;
         _mat.m[15] = 0.0f;
@@ -583,7 +586,7 @@ public:
         return _mat;
     }
 
-    Matrix LookAt(vec3 _from, vec3 _to, vec3 _up)
+    static Matrix LookAt(vec3 _from, vec3 _to, vec3 _up)
     {
         vec3 forward = (_from - _to).normalize();
         vec3 right =_up.cross(forward);
@@ -610,7 +613,7 @@ public:
         return mat;
     }
 
-    Matrix View(vec3 _pos, vec3 _forward)
+    static Matrix View(vec3 _pos, vec3 _forward)
     {
         _forward = _forward.normalize();
         vec3 right = vec3(0, 1, 0).cross(_forward);
