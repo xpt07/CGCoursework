@@ -7,13 +7,18 @@
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
     DXCore dx;
     Window win;
-    Plane plane;
     Shaders shader;
     Timer timer;
 
-    win.init(1024, 1024, "3D Plane");
+    win.init(1024, 1024, "3D Geometry");
     dx.init(win.width, win.height, win.hwnd, false);
+
+    Plane plane;
     plane.init(dx);
+
+    Cube cube;
+    cube.init(dx);
+
     shader.init("VertexShader.hlsl", "PixelShader.hlsl", dx);
 
     Matrix planeWorld = Matrix();
@@ -32,7 +37,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         shader.updateConstantVS("staticMeshBuffer", "VP", &VP);
 
         shader.apply(dx);
-        plane.geometry.draw(dx);
+        cube.geometry.draw(dx);
 
         win.processMessages();
         dx.present();

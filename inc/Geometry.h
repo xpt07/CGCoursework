@@ -60,10 +60,10 @@ public:
 
 	void init(DXCore& core) {
 		std::vector<STATIC_VERTEX> vertices;
-		vertices.push_back(addVertex(vec3(-15, 0, -15), vec3(0, 1, 0), 0, 0));
-		vertices.push_back(addVertex(vec3(15, 0, -15), vec3(0, 1, 0), 1, 0));
-		vertices.push_back(addVertex(vec3(-15, 0, 15), vec3(0, 1, 0), 0, 1));
-		vertices.push_back(addVertex(vec3(15, 0, 15), vec3(0, 1, 0), 1, 1));
+		vertices.push_back(addVertex(vec3(-1, 0, -1), vec3(0, 1, 0), 0, 0));
+		vertices.push_back(addVertex(vec3(1, 0, -1), vec3(0, 1, 0), 1, 0));
+		vertices.push_back(addVertex(vec3(-1, 0, 1), vec3(0, 1, 0), 0, 1));
+		vertices.push_back(addVertex(vec3(1, 0, 1), vec3(0, 1, 0), 1, 1));
 		std::vector<unsigned int> indices;
 		indices.push_back(2); indices.push_back(1); indices.push_back(0);
 		indices.push_back(1); indices.push_back(2); indices.push_back(3);
@@ -72,7 +72,19 @@ public:
 	}
 };
 
-class Model {
+class Cube {
 public:
+	Mesh geometry;
 
+	STATIC_VERTEX addVertex(vec3 p, vec3 n, float tu, float tv) {
+		STATIC_VERTEX v;
+		v.pos = p;
+		v.normal = n;
+		v.tangent = vec3();
+		v.tu = tu;
+		v.tv = tv;
+		return v;
+	}
+
+	void init(DXCore& core);
 };
