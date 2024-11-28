@@ -13,6 +13,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     win.init(1024, 1024, "3D Geometry");
     dx.init(win.width, win.height, win.hwnd, false);
 
+    Model soldier;
+    soldier.init("C:/Users/u5632744/Desktop/Computer Graphics/CGCoursework/resources/Soldier/Models/Soldier1.gem", dx, true);
+
+    Model acaciaTree;
+    acaciaTree.init("C:/Users/u5632744/Desktop/Computer Graphics/CGCoursework/resources/Trees/Models/acacia.gem", dx, false);
+
     Plane plane;
     plane.init(dx);
 
@@ -37,29 +43,39 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         dx.clear();
 
         // Draw Plane
-        Matrix planeWorld = Matrix::translation(vec3(0, -1, 0)); // Place the plane below the cubes
-        shader.updateConstantVS("staticMeshBuffer", "W", &planeWorld);
-
+        worldMatrix = worldMatrix.translation(vec3(0, -1, 0)); // Place the plane below the cubes
+        shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shader.apply(dx);
         plane.geometry.draw(dx);
 
-        // Draw First Cube
-        Matrix cube1World = Matrix::translation(vec3(0, 1, 0)); // Centered at origin
-        shader.updateConstantVS("staticMeshBuffer", "W", &cube1World);
+        worldMatrix = worldMatrix.scaling(vec3(0.01f, 0.01f, 0.01f)) * worldMatrix.translation(vec3(0, 1, 400));
+        shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shader.apply(dx);
-        cube.geometry.draw(dx);
+        soldier.draw(dx);
 
-        // Draw Second Cube
-        Matrix cube2World = Matrix::translation(vec3(3, 1, 0)); // Offset to the right
-        shader.updateConstantVS("staticMeshBuffer", "W", &cube2World);
+        worldMatrix = worldMatrix.scaling(vec3(0.01f, 0.01f, 0.01f)) * worldMatrix.translation(vec3(0, 1, 0));
+        shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shader.apply(dx);
-        cube.geometry.draw(dx);
+        acaciaTree.draw(dx);
 
-        // Draw Sphere
-        Matrix sphereWorld = Matrix::translation(vec3(-3, 1, 0)); // Offset to the left
-        shader.updateConstantVS("staticMeshBuffer", "W", &sphereWorld);
-        shader.apply(dx);
-        sphere.geometry.draw(dx);
+        //// Draw First Cube
+        //worldMatrix = worldMatrix.scaling(vec3(0.1f, 0.1f, 0.1f)) * worldMatrix.translation(vec3(0, 50, 0));;
+        ////cube1World = cube1World.translation(vec3(0, 1, 0)); // Centered at origin
+        //shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
+        //shader.apply(dx);
+        //cube.geometry.draw(dx);
+
+        //// Draw Second Cube
+        //worldMatrix = worldMatrix.translation(vec3(3, 1, 0)); // Offset to the right
+        //shader.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
+        //shader.apply(dx);
+        //cube.geometry.draw(dx);
+
+        //// Draw Sphere
+        //Matrix sphereWorld = Matrix::translation(vec3(-3, 1, 0)); // Offset to the left
+        //shader.updateConstantVS("staticMeshBuffer", "W", &sphereWorld);
+        //shader.apply(dx);
+        //sphere.geometry.draw(dx);
 
         shader.updateConstantVS("staticMeshBuffer", "VP", &VP);
 

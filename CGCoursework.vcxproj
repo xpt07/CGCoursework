@@ -132,6 +132,7 @@
     <ClInclude Include="inc\Camera.h" />
     <ClInclude Include="inc\core.h" />
     <ClInclude Include="inc\DXCore.h" />
+    <ClInclude Include="inc\GEMLoader.h" />
     <ClInclude Include="inc\Geometry.h" />
     <ClInclude Include="inc\ShaderReflection.h" />
     <ClInclude Include="inc\Shaders.h" />

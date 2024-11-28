@@ -1,4 +1,5 @@
 #pragma once
+#include "GEMLoader.h"
 #include "core.h"
 #include "DXCore.h"
 
@@ -104,4 +105,13 @@ public:
 	}
 
 	void init(int rings, int segments, float radius, DXCore& core);
+};
+
+class Model {
+public:
+	std::vector<Mesh> meshes;
+
+	void init(std::string filename, DXCore& core, bool isAnimated);
+
+	void draw(DXCore& core);
 };
