@@ -174,31 +174,86 @@ void Sphere::init(int rings, int segments, float radius, DXCore& core) {
 
 void Model::init(std::string filename, DXCore& core, bool isAnimated)
 {
+
 	GEMLoader::GEMModelLoader loader;
 	std::vector<GEMLoader::GEMMesh> gemmeshes;
-	loader.load(filename, gemmeshes);
+	GEMLoader::GEMAnimation gemanimation;
+
+	loader.load(filename, gemmeshes, gemanimation);
+
 	for (int i = 0; i < gemmeshes.size(); i++) {
 		Mesh mesh;
-		std::vector<STATIC_VERTEX> vertices;
-		if (isAnimated)
-		{
-			for (int j = 0; j < gemmeshes[i].verticesAnimated.size(); j++) {
-				STATIC_VERTEX v;
-				memcpy(&v, &gemmeshes[i].verticesAnimated[j], sizeof(STATIC_VERTEX));
-				vertices.push_back(v);
-			}
+		std::vector<ANIMATED_VERTEX> vertices;
+
+		for (int j = 0; j < gemmeshes[i].verticesAnimated.size(); j++) {
+			ANIMATED_VERTEX v;
+			memcpy(&v, &gemmeshes[i].verticesAnimated[j], sizeof(ANIMATED_VERTEX));
+			vertices.push_back(v);
 		}
-		else
-		{
-			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
-				STATIC_VERTEX v;
-				memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
-				vertices.push_back(v);
-			}
-		}
+
 		mesh.init(vertices, gemmeshes[i].indices, core);
 		meshes.push_back(mesh);
 	}
+
+	for (int i = 0; i < gemanimation.bones.size(); i++)
+	{
+		Bone bone;
+		bone.name = gemanimation.bones[i].name;
+		memcpy(&bone.offset, &gemanimation.bones[i].offset, 16 * sizeof(float));
+		bone.parentIndex = gemanimation.bones[i].parentIndex;
+		animation.skeleton.bones.push_back(bone);
+	}
+
+	for (int i = 0; i < gemanimation.animations.size(); i++)
+	{
+		std::string name = gemanimation.animations[i].name;
+		AnimationSequence aseq;
+		aseq.ticksPerSecond = gemanimation.animations[i].ticksPerSecond;
+		for (int n = 0; n < gemanimation.animations[i].frames.size(); n++)
+		{
+			AnimationFrame frame;
+			for (int index = 0; index < gemanimation.animations[i].frames[n].positions.size(); index++)
+			{
+				vec3 p;
+				Quaternion q;
+				vec3 s;
+				memcpy(&p, &gemanimation.animations[i].frames[n].positions[index], sizeof(vec3));
+				frame.positions.push_back(p);
+				memcpy(&q, &gemanimation.animations[i].frames[n].rotations[index], sizeof(Quaternion));
+				frame.rotations.push_back(q);
+				memcpy(&s, &gemanimation.animations[i].frames[n].scales[index], sizeof(vec3));
+				frame.scales.push_back(s);
+			}
+			aseq.frames.push_back(frame);
+		}
+		animation.animations.insert({ name, aseq });
+	}
+
+	//GEMLoader::GEMModelLoader loader;
+	//std::vector<GEMLoader::GEMMesh> gemmeshes;
+	//loader.load(filename, gemmeshes);
+	//for (int i = 0; i < gemmeshes.size(); i++) {
+	//	Mesh mesh;
+	//	std::vector<STATIC_VERTEX> vertices;
+	//	if (isAnimated)
+	//	{
+	//		for (int j = 0; j < gemmeshes[i].verticesAnimated.size(); j++) {
+	//			STATIC_VERTEX v;
+	//			memcpy(&v, &gemmeshes[i].verticesAnimated[j], sizeof(STATIC_VERTEX));
+	//			vertices.push_back(v);
+	//		}
+	//	}
+	//	else
+	//	{
+	//		for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
+	//			STATIC_VERTEX v;
+	//			memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
+	//			vertices.push_back(v);
+	//		}
+	//	}
+	//	mesh.init(vertices, gemmeshes[i].indices, core);
+	//	meshes.push_back(mesh);
+	//}
 
 }
 

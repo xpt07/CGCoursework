@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\Adapter.h" />
+    <ClInclude Include="inc\Animation.h" />
     <ClInclude Include="inc\Camera.h" />
     <ClInclude Include="inc\core.h" />
     <ClInclude Include="inc\DXCore.h" />

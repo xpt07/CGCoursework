@@ -1,6 +1,8 @@
 #pragma once
 #include "GEMLoader.h"
+#include "Animation.h"
 #include "core.h"
+#include "Shaders.h"
 #include "DXCore.h"
 
 struct Vertex {
@@ -29,6 +31,18 @@ struct STATIC_VERTEX
 	float tv;
 };
 
+struct ANIMATED_VERTEX
+{
+	vec3 pos;
+	vec3 normal;
+	vec3 tangent;
+	float tu;
+	float tv;
+	unsigned int bonesIDs[4];
+	float boneWeights[4];
+};
+
+
 class Mesh
 {
 public:
@@ -39,6 +53,12 @@ public:
 
 	void init(void* vertices, int vertexSizeInBytes, int numVertices, unsigned int* indices, int numIndices, DXCore& core);
 	void init(std::vector<STATIC_VERTEX> vertices, std::vector<unsigned int> indices, DXCore& core);
+
+	void init(std::vector<ANIMATED_VERTEX> vertices, std::vector<unsigned int> indices, DXCore& core)
+	{
+		init(&vertices[0], sizeof(ANIMATED_VERTEX), vertices.size(), &indices[0], indices.size(), core);
+	}
+
 
 	void draw(DXCore& core);
 };
@@ -110,6 +130,7 @@ public:
 class Model {
 public:
 	std::vector<Mesh> meshes;
+	Animation animation;
 
 	void init(std::string filename, DXCore& core, bool isAnimated);
 

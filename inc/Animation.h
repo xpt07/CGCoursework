@@ -28,15 +28,19 @@ class AnimationSequence
 public:
 	std::vector<AnimationFrame> frames;
 	float ticksPerSecond;
+
 	vec3 interpolate(vec3 p1, vec3 p2, float t) {
 		return ((p1 * (1.0f - t)) + (p2 * t));
 	}
+
 	Quaternion interpolate(Quaternion q1, Quaternion q2, float t) {
 		return Quaternion::slerp(q1, q2, t);
 	}
+
 	float duration() {
 		return ((float)frames.size() / ticksPerSecond);
 	}
+
 	void calcFrame(float t, int& frame, float& interpolationFact)
 	{
 		interpolationFact = t * ticksPerSecond;
@@ -44,10 +48,12 @@ public:
 		interpolationFact = interpolationFact - (float)frame;
 		frame = min(frame, frames.size() - 1);
 	}
+
 	int nextFrame(int frame)
 	{
 		return min(frame + 1, frames.size() - 1);
 	}
+
 	Matrix interpolateBoneToGlobal(Matrix* matrices, int baseFrame, float interpolationFact, Skeleton* skeleton, int boneIndex) {
 		int nextFrameIndex = nextFrame(baseFrame);
 		Matrix scale = Matrix::scaling(interpolate(frames[baseFrame].scales[boneIndex], frames[nextFrameIndex].scales[boneIndex], interpolationFact));
