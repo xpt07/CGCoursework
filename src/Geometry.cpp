@@ -172,9 +172,8 @@ void Sphere::init(int rings, int segments, float radius, DXCore& core) {
 	geometry.init(vertices, indices, core);
 }
 
-void Model::init(std::string filename, DXCore& core, bool isAnimated)
+void Model::init(std::string filename, DXCore& core, int i)
 {
-
 	GEMLoader::GEMModelLoader loader;
 	std::vector<GEMLoader::GEMMesh> gemmeshes;
 	GEMLoader::GEMAnimation gemanimation;
@@ -228,33 +227,25 @@ void Model::init(std::string filename, DXCore& core, bool isAnimated)
 		}
 		animation.animations.insert({ name, aseq });
 	}
+}
 
-	//GEMLoader::GEMModelLoader loader;
-	//std::vector<GEMLoader::GEMMesh> gemmeshes;
-	//loader.load(filename, gemmeshes);
-	//for (int i = 0; i < gemmeshes.size(); i++) {
-	//	Mesh mesh;
-	//	std::vector<STATIC_VERTEX> vertices;
-	//	if (isAnimated)
-	//	{
-	//		for (int j = 0; j < gemmeshes[i].verticesAnimated.size(); j++) {
-	//			STATIC_VERTEX v;
-	//			memcpy(&v, &gemmeshes[i].verticesAnimated[j], sizeof(STATIC_VERTEX));
-	//			vertices.push_back(v);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
-	//			STATIC_VERTEX v;
-	//			memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
-	//			vertices.push_back(v);
-	//		}
-	//	}
-	//	mesh.init(vertices, gemmeshes[i].indices, core);
-	//	meshes.push_back(mesh);
-	//}
+void Model::init(std::string filename, DXCore& core, bool b) {
+	GEMLoader::GEMModelLoader loader;
+	std::vector<GEMLoader::GEMMesh> gemmeshes;
+	loader.load(filename, gemmeshes);
 
+	for (int i = 0; i < gemmeshes.size(); i++) {
+		Mesh mesh;
+		std::vector<STATIC_VERTEX> vertices;
+		for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++)
+		{
+			STATIC_VERTEX v;
+			memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
+			vertices.push_back(v);
+		}
+		mesh.init(vertices, gemmeshes[i].indices, core);
+		meshes.push_back(mesh);
+	}
 }
 
 void Model::draw(DXCore& core)

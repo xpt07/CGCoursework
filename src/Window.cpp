@@ -101,3 +101,10 @@ void Window::processMessages()
 		DispatchMessage(&msg);
 	}
 }
+
+void Window::centerCursor()
+{
+	POINT center = { width / 2, height / 2 };
+	ClientToScreen(hwnd, &center);
+	SetCursorPos(center.x, center.y);
+}

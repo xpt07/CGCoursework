@@ -59,9 +59,10 @@ public:
 		Matrix scale = Matrix::scaling(interpolate(frames[baseFrame].scales[boneIndex], frames[nextFrameIndex].scales[boneIndex], interpolationFact));
 		Matrix rotation = interpolate(frames[baseFrame].rotations[boneIndex], frames[nextFrameIndex].rotations[boneIndex], interpolationFact).toMatrix();
 		Matrix translation = Matrix::translation(interpolate(frames[baseFrame].positions[boneIndex], frames[nextFrameIndex].positions[boneIndex], interpolationFact));
-		Matrix local = scale * rotation * translation;
-		if (skeleton->bones[boneIndex].parentIndex > -1) {
-			Matrix global = local * matrices[skeleton->bones[boneIndex].parentIndex];
+		Matrix local = translation * rotation * scale;
+		if (skeleton->bones[boneIndex].parentIndex > -1)
+		{
+			Matrix global = matrices[skeleton->bones[boneIndex].parentIndex] * local;
 			return global;
 		}
 		return local;
@@ -84,7 +85,7 @@ public:
 	{
 		for (int i = 0; i < skeleton.bones.size(); i++)
 		{
-			matrices[i] = skeleton.bones[i].offset * matrices[i] * skeleton.globalInverse;
+			matrices[i] = matrices[i] * skeleton.bones[i].offset * skeleton.globalInverse;
 		}
 	}
 };

@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <memory.h>
 #include <string>
+#include "core.h"
 
 using namespace std;
 
@@ -20,4 +21,5 @@ public:
 	void init(int window_width, int window_height, const string window_name, int window_x = 0, int window_y = 0);
 	void updateMouse(int x, int y);
 	void processMessages();
+	void centerCursor();
 };

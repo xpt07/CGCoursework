@@ -4,39 +4,48 @@
 
 class Camera {
 public:
-    vec3 position;
-    Quaternion rotation;
-    float moveSpeed = 5.0f;
-    float lookSensitivity = 0.1f;
+    vec3 position;          
+    Quaternion rotation;    
+    float moveSpeed = 0.01f;
+    float lookSensitivity = 0.001f;
+    float pitch = 0.0f;
+    float yaw = 0.0f;  
 
     Camera(vec3 startPos = vec3(0, 0, 0)) : position(startPos), rotation(Quaternion()) {}
 
-    // Update the camera based on input
-    void update(Window& window, float deltaTime) {
+    void update(Window& window) {
+
+        POINT cursorPos;
+        GetCursorPos(&cursorPos);
+        ScreenToClient(window.hwnd, &cursorPos);
+
+        vec2 center(window.width / 2, window.height / 2);
+        yaw += (cursorPos.x - center.x) * lookSensitivity;
+        pitch += (cursorPos.y - center.y) * lookSensitivity;
+
+        pitch = max(-M_PI / 2.0f, min(M_PI / 2.0f, pitch));
+
+        window.centerCursor();
+
+        Quaternion yawRot(cos(yaw / 2), 0, sin(yaw / 2), 0);
+        Quaternion pitchRot(cos(pitch / 2), sin(pitch / 2), 0, 0);
+        rotation = (yawRot.normalize() * pitchRot.normalize()).normalize();
+
         vec3 forward = rotation.toMatrix().mulVec(vec3(0, 0, -1)).normalize();
         vec3 right = rotation.toMatrix().mulVec(vec3(1, 0, 0)).normalize();
-        vec3 up = rotation.toMatrix().mulVec(vec3(0, 1, 0)).normalize();
+        
+        vec3 moveDir(0, 0, 0);
+        if (window.keys['W']) moveDir += forward;
+        if (window.keys['S']) moveDir -= forward;
+        if (window.keys['A']) moveDir -= right;
+        if (window.keys['D']) moveDir += right;
 
-        // Movement
-        if (window.keys['W']) position += forward * moveSpeed * deltaTime;
-        if (window.keys['S']) position -= forward * moveSpeed * deltaTime;
-        if (window.keys['A']) position -= right * moveSpeed * deltaTime;
-        if (window.keys['D']) position += right * moveSpeed * deltaTime;
-
-        // Mouse look
-        float yaw = window.mousex * lookSensitivity * deltaTime;
-        float pitch = window.mousey * lookSensitivity * deltaTime;
-
-        Quaternion yawRotation = Quaternion(cos(yaw / 2), 0, sin(yaw / 2), 0);
-        Quaternion pitchRotation = Quaternion(cos(pitch / 2), sin(pitch / 2), 0, 0);
-
-        rotation = (yawRotation * rotation * pitchRotation).normalize();
+        if (moveDir.getLength() > 0) {
+            position += moveDir.normalize() * moveSpeed;
+        }
     }
 
-    // Generate the view matrix
-    Matrix getViewMatrix() {
-        Matrix rotationMatrix = rotation.toMatrix();
-        Matrix translationMatrix = Matrix::translation(-position);
-        return rotationMatrix.mul(translationMatrix);
+    Matrix getViewMatrix() const {
+        return rotation.toMatrix().mul(Matrix::translation(-position));
     }
 };

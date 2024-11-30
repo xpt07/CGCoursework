@@ -5,6 +5,11 @@
 #include "Shaders.h"
 #include "DXCore.h"
 
+enum ModelAnim {
+	STATIC,
+	ANIMATED
+};
+
 struct Vertex {
 	vec3 position;
 	Colour colour;
@@ -132,7 +137,8 @@ public:
 	std::vector<Mesh> meshes;
 	Animation animation;
 
-	void init(std::string filename, DXCore& core, bool isAnimated);
+	void init(std::string filename, DXCore& core, int i);
+	void init(std::string filename, DXCore& core, bool b);
 
 	void draw(DXCore& core);
 };

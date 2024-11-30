@@ -189,8 +189,8 @@ public:
         return length;
     }
 
-    float lengthSq() const {
-        return (SQ(v[0]) + SQ(v[1]) + SQ(v[2]));
+    float getLength() const {
+        return sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     }
 
     // Vector-Vector Operators
@@ -274,10 +274,6 @@ public:
     // Negation
     vec3 operator-() const {
         return vec3(-v[0], -v[1], -v[2]);
-    }
-
-    void print() const {
-        std::cout << "vec4(" << x << ", " << y << ", " << z << ", " << ")\n";
     }
 };
 
@@ -488,22 +484,20 @@ public:
         ret.m[1] = m[0] * matrix.m[1] + m[1] * matrix.m[5] + m[2] * matrix.m[9] + m[3] * matrix.m[13];
         ret.m[2] = m[0] * matrix.m[2] + m[1] * matrix.m[6] + m[2] * matrix.m[10] + m[3] * matrix.m[14];
         ret.m[3] = m[0] * matrix.m[3] + m[1] * matrix.m[7] + m[2] * matrix.m[11] + m[3] * matrix.m[15];
-
         ret.m[4] = m[4] * matrix.m[0] + m[5] * matrix.m[4] + m[6] * matrix.m[8] + m[7] * matrix.m[12];
         ret.m[5] = m[4] * matrix.m[1] + m[5] * matrix.m[5] + m[6] * matrix.m[9] + m[7] * matrix.m[13];
         ret.m[6] = m[4] * matrix.m[2] + m[5] * matrix.m[6] + m[6] * matrix.m[10] + m[7] * matrix.m[14];
         ret.m[7] = m[4] * matrix.m[3] + m[5] * matrix.m[7] + m[6] * matrix.m[11] + m[7] * matrix.m[15];
-
         ret.m[8] = m[8] * matrix.m[0] + m[9] * matrix.m[4] + m[10] * matrix.m[8] + m[11] * matrix.m[12];
         ret.m[9] = m[8] * matrix.m[1] + m[9] * matrix.m[5] + m[10] * matrix.m[9] + m[11] * matrix.m[13];
         ret.m[10] = m[8] * matrix.m[2] + m[9] * matrix.m[6] + m[10] * matrix.m[10] + m[11] * matrix.m[14];
         ret.m[11] = m[8] * matrix.m[3] + m[9] * matrix.m[7] + m[10] * matrix.m[11] + m[11] * matrix.m[15];
-
         ret.m[12] = m[12] * matrix.m[0] + m[13] * matrix.m[4] + m[14] * matrix.m[8] + m[15] * matrix.m[12];
         ret.m[13] = m[12] * matrix.m[1] + m[13] * matrix.m[5] + m[14] * matrix.m[9] + m[15] * matrix.m[13];
         ret.m[14] = m[12] * matrix.m[2] + m[13] * matrix.m[6] + m[14] * matrix.m[10] + m[15] * matrix.m[14];
         ret.m[15] = m[12] * matrix.m[3] + m[13] * matrix.m[7] + m[14] * matrix.m[11] + m[15] * matrix.m[15];
         return ret;
+
     }
 
     Matrix invert()
@@ -742,11 +736,6 @@ public:
     // Quaternion subtraction
     Quaternion operator-(const Quaternion& q) const {
         return Quaternion(w - q.w, x - q.x, y - q.y, z - q.z);
-    }
-
-    // Print function for debugging
-    void print() const {
-        std::cout << "Quaternion(" << w << ", " << x << ", " << y << ", " << z << ")\n";
     }
 };
 
