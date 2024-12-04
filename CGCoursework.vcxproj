@@ -137,6 +137,8 @@
     <ClInclude Include="inc\Geometry.h" />
     <ClInclude Include="inc\ShaderReflection.h" />
     <ClInclude Include="inc\Shaders.h" />
+    <ClInclude Include="inc\stb_image.h" />
+    <ClInclude Include="inc\Texture.h" />
     <ClInclude Include="inc\Timer.h" />
     <ClInclude Include="inc\Window.h" />
   </ItemGroup>
@@ -146,6 +148,7 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\Shaders.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

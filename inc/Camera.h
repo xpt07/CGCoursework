@@ -29,7 +29,7 @@ public:
 
         Quaternion yawRot(cos(yaw / 2), 0, sin(yaw / 2), 0);
         Quaternion pitchRot(cos(pitch / 2), sin(pitch / 2), 0, 0);
-        rotation = (yawRot.normalize() * pitchRot.normalize()).normalize();
+        rotation = (yawRot * pitchRot);
 
         vec3 forward = rotation.toMatrix().mulVec(vec3(0, 0, -1)).normalize();
         vec3 right = rotation.toMatrix().mulVec(vec3(1, 0, 0)).normalize();
@@ -45,7 +45,7 @@ public:
         }
     }
 
-    Matrix getViewMatrix() const {
+    Matrix getViewMatrix() {
         return rotation.toMatrix().mul(Matrix::translation(-position));
     }
 };

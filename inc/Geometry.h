@@ -135,6 +135,7 @@ public:
 class Model {
 public:
 	std::vector<Mesh> meshes;
+	std::vector<std::string> textureFilenames;
 	Animation animation;
 
 	void init(std::string filename, DXCore& core, int i);
