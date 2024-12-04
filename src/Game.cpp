@@ -11,7 +11,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     Shaders shaderAnim;
     Shaders shaderStat;
     Timer timer;
-    Camera camera(vec3(vec3(0, 2, 10)));
+    Camera camera(vec3(vec3(0, 2, -20)));
 
     win.init(1024, 1024, "CGCoursework");
     dx.init(win.width, win.height, win.hwnd, false);
@@ -42,7 +42,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     while (true) {
         float dt = timer.update();
 
-        camera.update(win);
+        camera.update(win, dt);
         Matrix view = camera.getViewMatrix();
         Matrix projection = projection.Projection(M_PI / 4.0f, float(win.width) / win.height, 0.1f, 100.0f);
         Matrix VP = projection.mul(view);
