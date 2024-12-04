@@ -10,7 +10,9 @@
 #define min(a,b) (a < b ? a : b)
 constexpr auto CANVAS_WIDTH = 1024;
 constexpr auto CANVAS_HEIGHT = 768;
-constexpr double M_PI = 3.14159265358979323846;
+constexpr auto M_PI = 3.14159265358979323846;
+constexpr auto M_PI_2 = 1.57079632679489661923;
+
 
 
 using namespace std;
@@ -607,6 +609,17 @@ public:
         return mat;
     }
 
+    Matrix transpose() const {
+        Matrix transposed;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                transposed.a[i][j] = this->a[j][i];
+            }
+        }
+        return transposed;
+    }
+
+
     static Matrix View(vec3 _pos, vec3 _forward)
     {
         _forward = _forward.normalize();
@@ -647,6 +660,20 @@ public:
         struct { float w, x, y, z; };
     };
 
+    vec3 operator*(const vec3& v) const {
+        // Extract components for readability
+        vec3 u(x, y, z);
+        float s = w;
+
+        // Rodrigues' rotation formula
+        vec3 rotated = u * (2.0f * u.dot(v)) +  // Parallel component
+            v * (s * s - u.dot(u)) + // Perpendicular component
+            u.cross(v) * (2.0f * s); // Orthogonal component
+
+        return rotated;
+    }
+
+
     // Quaternion multiplication
     Quaternion operator*(const Quaternion& q2) const {
         return Quaternion(
@@ -669,6 +696,13 @@ public:
         float invLen = 1.0f / len;
         return Quaternion(q[0] * invLen, q[1] * invLen, q[2] * invLen, q[3] * invLen);
     }
+
+    static Quaternion fromAxisAngle(const vec3& axis, float angle) {
+        float halfAngle = angle * 0.5f;
+        float sinHalfAngle = sinf(halfAngle);
+        return Quaternion(cosf(halfAngle), axis.x * sinHalfAngle, axis.y * sinHalfAngle, axis.z * sinHalfAngle);
+    }
+
 
     // Slerp (Spherical Linear Interpolation)
     static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t) {
@@ -699,7 +733,7 @@ public:
         return (q1 * s0) + (q2b * s1);
     }
 
-    Matrix toMatrix()
+    Matrix toMatrix() const
     {
         float xx = q[0] * q[0];
         float xy = q[0] * q[1];

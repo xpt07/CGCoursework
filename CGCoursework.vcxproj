@@ -135,6 +135,7 @@
     <ClInclude Include="inc\DXCore.h" />
     <ClInclude Include="inc\GEMLoader.h" />
     <ClInclude Include="inc\Geometry.h" />
+    <ClInclude Include="inc\ShaderManagement.h" />
     <ClInclude Include="inc\ShaderReflection.h" />
     <ClInclude Include="inc\Shaders.h" />
     <ClInclude Include="inc\stb_image.h" />

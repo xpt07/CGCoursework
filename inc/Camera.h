@@ -1,51 +1,77 @@
 #pragma once
-#include "Window.h"
 #include "core.h"
+#include "Window.h"
+#include <Windows.h>
 
 class Camera {
 public:
-    vec3 position;          
-    Quaternion rotation;    
-    float moveSpeed = 0.01f;
-    float lookSensitivity = 0.001f;
-    float pitch = 0.0f;
-    float yaw = 0.0f;  
+    vec3 position;
+    vec3 forward;
+    vec3 up;
+    vec3 right;
+    float speed;
+    float sensitivity;
 
-    Camera(vec3 startPos = vec3(0, 0, 0)) : position(startPos), rotation(Quaternion()) {}
-
-    void update(Window& window) {
-
-        POINT cursorPos;
-        GetCursorPos(&cursorPos);
-        ScreenToClient(window.hwnd, &cursorPos);
-
-        vec2 center(window.width / 2, window.height / 2);
-        yaw += (cursorPos.x - center.x) * lookSensitivity;
-        pitch += (cursorPos.y - center.y) * lookSensitivity;
-
-        pitch = max(-M_PI / 2.0f, min(M_PI / 2.0f, pitch));
-
-        window.centerCursor();
-
-        Quaternion yawRot(cos(yaw / 2), 0, sin(yaw / 2), 0);
-        Quaternion pitchRot(cos(pitch / 2), sin(pitch / 2), 0, 0);
-        rotation = (yawRot * pitchRot);
-
-        vec3 forward = rotation.toMatrix().mulVec(vec3(0, 0, -1)).normalize();
-        vec3 right = rotation.toMatrix().mulVec(vec3(1, 0, 0)).normalize();
-        
-        vec3 moveDir(0, 0, 0);
-        if (window.keys['W']) moveDir += forward;
-        if (window.keys['S']) moveDir -= forward;
-        if (window.keys['A']) moveDir -= right;
-        if (window.keys['D']) moveDir += right;
-
-        if (moveDir.getLength() > 0) {
-            position += moveDir.normalize() * moveSpeed;
-        }
+    Camera(vec3 startPosition = vec3(0, 0, 0), vec3 startForward = vec3(0, 0, 1), float movementSpeed = 5.0f, float rotationSensitivity = 0.001f)
+        : position(startPosition), forward(startForward.normalize()), speed(movementSpeed), sensitivity(rotationSensitivity) {
+        up = vec3(0, 1, 0);
+        right = forward.cross(up).normalize();
     }
 
-    Matrix getViewMatrix() {
-        return rotation.toMatrix().mul(Matrix::translation(-position));
+    void update(Window& win, float deltaTime) {
+        vec3 moveDirection(0, 0, 0);
+        if (win.keys['W']) moveDirection += forward;
+        if (win.keys['S']) moveDirection -= forward;
+        if (win.keys['A']) moveDirection -= right;
+        if (win.keys['D']) moveDirection += right;
+
+        if (moveDirection.getLength() > 0.0f)
+            moveDirection = moveDirection.normalize() * speed * deltaTime;
+
+        position += moveDirection;
+
+        handleMouseInput(win);
+    }
+
+    Matrix getViewMatrix() const {
+        vec3 target = position + forward;
+        return Matrix::LookAt(position, target, up);
+    }
+
+private:
+    void handleMouseInput(Window& win) {
+        POINT cursorPos;
+        GetCursorPos(&cursorPos);
+        ScreenToClient(win.hwnd, &cursorPos);
+
+        // Calculate the delta from the window's center
+        int centerX = win.width / 2;
+        int centerY = win.height / 2;
+        int deltaX = cursorPos.x - centerX;
+        int deltaY = cursorPos.y - centerY;
+
+        // Fix for inverted left/right movement
+        rotateYaw(-deltaX * sensitivity); // Invert deltaX
+        rotatePitch(-deltaY * sensitivity);
+
+        // Recenter the cursor
+        win.centerCursor();
+    }
+
+    void rotateYaw(float angle) {
+        Quaternion yaw = Quaternion::fromAxisAngle(up, angle);
+        forward = yaw * forward;
+        right = yaw * right;
+    }
+
+    void rotatePitch(float angle) {
+        Quaternion pitch = Quaternion::fromAxisAngle(right, angle);
+        vec3 newForward = pitch * forward;
+
+        // Prevent camera from flipping
+        if (abs(newForward.dot(up)) < 0.99f) {
+            forward = newForward;
+            up = right.cross(forward).normalize();
+        }
     }
 };
