@@ -8,14 +8,14 @@ std::string Shaders::readFile(std::string filename)
 	return buffer.str();
 }
 
-void Shaders::compileVS(std::string VS_file, DXCore& core)
+void Shaders::compileVS(std::string VS_filename, DXCore& core)
 {
 
 	ID3DBlob* compiledVertexShader = nullptr;
 	ID3DBlob* status = nullptr;
 
-	HRESULT hr = D3DCompile(VS_file.c_str(),
-		strlen(VS_file.c_str()),
+	HRESULT hr = D3DCompile(VS_filename.c_str(),
+		strlen(VS_filename.c_str()),
 		NULL,
 		NULL,
 		NULL,
@@ -58,14 +58,14 @@ void Shaders::compileVS(std::string VS_file, DXCore& core)
 	reflection.build(core, compiledVertexShader, vsConstantBuffers, textureBindPointsVS, ShaderStage::VertexShader);
 }
 
-void Shaders::compilePS(std::string PS_file, DXCore& core)
+void Shaders::compilePS(std::string PS_filename, DXCore& core)
 {
 
 	ID3DBlob* compiledPixelShader = nullptr;
 	ID3DBlob* status = nullptr;
 
-	HRESULT hr = D3DCompile(PS_file.c_str(),
-		strlen(PS_file.c_str()),
+	HRESULT hr = D3DCompile(PS_filename.c_str(),
+		strlen(PS_filename.c_str()),
 		NULL,
 		NULL,
 		NULL,
@@ -93,6 +93,27 @@ void Shaders::compilePS(std::string PS_file, DXCore& core)
 
 }
 
+void Shaders::updateConstant(std::string constantBufferName, std::string variableName, void* data, std::vector<ConstantBuffer>& buffers)
+{
+	for (int i = 0; i < buffers.size(); i++)
+	{
+		if (buffers[i].name == constantBufferName)
+		{
+			buffers[i].update(variableName, data);
+			return;
+		}
+	}
+}
+
+void Shaders::updateConstantVS(std::string constantBufferName, std::string variableName, void* data)
+{
+	updateConstant(constantBufferName, variableName, data, vsConstantBuffers);
+}
+void Shaders::updateConstantPS(std::string constantBufferName, std::string variableName, void* data)
+{
+	updateConstant(constantBufferName, variableName, data, psConstantBuffers);
+}
+
 void Shaders::apply(DXCore& core)
 {
 	core.devicecontext->IASetInputLayout(layout);
@@ -109,10 +130,10 @@ void Shaders::apply(DXCore& core)
 	}
 }
 
-void Shaders::init(std::string VS_file, std::string PS_file, DXCore& core)
+void Shaders::init(std::string VS_filename, std::string PS_filename, DXCore& core)
 {
-	std::string vertexShaderHLSL = readFile(VS_file);
-	std::string pixelShaderHLSL = readFile(PS_file);
+	std::string vertexShaderHLSL = readFile(VS_filename);
+	std::string pixelShaderHLSL = readFile(PS_filename);
 
 	compileVS(vertexShaderHLSL, core);
 	compilePS(pixelShaderHLSL, core);

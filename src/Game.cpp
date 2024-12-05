@@ -55,7 +55,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         shaderStat.apply(dx);
         plane.geometry.draw(dx);
 
-        trexAnimInstance.update("Run", dt);
+        trexAnimInstance.update("Idle", dt);
         worldMatrix = worldMatrix.translation(vec3(4, -1, 0));
         shaderAnim.updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
         shaderAnim.updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
