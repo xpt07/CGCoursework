@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "../inc/stb_image.h"
 #include "../inc/Texture.h"
 
 void Texture::init(int width, int height, int channels, DXGI_FORMAT format, unsigned char *data, DXCore& core)
@@ -42,11 +44,11 @@ void Texture::load(DXCore& core, std::string filename) {
             texelsWithAlpha[(i * 4) + 2] = texels[(i * 3) + 2];
             texelsWithAlpha[(i * 4) + 3] = 255;
         }
-        // Initialize texture using width, height, channels, and texelsWithAlpha
+        init(width, height, channels, DXGI_FORMAT_R8G8B8A8_UNORM, texelsWithAlpha, core);
         delete[] texelsWithAlpha;
     }
     else {
-        // Initialize texture using width, height, channels, and texels
+        init(width, height, channels, DXGI_FORMAT_R8G8B8A8_UNORM, texels, core);
     }
     stbi_image_free(texels);
 }

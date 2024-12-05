@@ -5,10 +5,6 @@
 
 std::string Shaders::readFile(const std::string& filename) {
     std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " + filename);
-    }
-
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
@@ -127,6 +123,18 @@ void Shaders::updateConstantPS(const std::string& constantBufferName, const std:
     updateConstant(constantBufferName, variableName, data, psConstantBuffers);
 }
 
+void Shaders::updateTexturePS(const std::string& textureName, ID3D11ShaderResourceView* srv, DXCore& core)
+{
+    // Retrieve the bind slot from the textureBindPointsPS map
+    if (textureBindPointsPS.find(textureName) != textureBindPointsPS.end()) {
+        int bindPoint = textureBindPointsPS[textureName];
+        core.devicecontext->PSSetShaderResources(bindPoint, 1, &srv);
+    }
+    else {
+        throw std::runtime_error("Texture bind point not found for: " + textureName);
+    }
+}
+
 void Shaders::updateConstant(const std::string& constantBufferName, const std::string& variableName, void* data, std::vector<ConstantBuffer>& buffers) {
     for (auto& buffer : buffers) {
         if (buffer.name == constantBufferName) {
@@ -134,7 +142,6 @@ void Shaders::updateConstant(const std::string& constantBufferName, const std::s
             return;
         }
     }
-    throw std::runtime_error("Constant buffer not found: " + constantBufferName);
 }
 
 void Shaders::apply(DXCore& core) {

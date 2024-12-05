@@ -1,6 +1,5 @@
 #include "../inc/Window.h"
 #include "../inc/Geometry.h"
-#include "../inc/ShaderManager.h"
 #include "../inc/Timer.h"
 #include "../inc/Camera.h"
 #include "../inc/core.h"
@@ -12,16 +11,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     Timer timer;
     Camera camera(vec3(vec3(0, 2, -20)));
 
+    TextureManager textureManager;
+
     win.init(1024, 1024, "CGCoursework");
     dx.init(win.width, win.height, win.hwnd, false);
 
     ShowCursor(FALSE);
 
-    Model acaciaTree;
-    acaciaTree.init("resources/Trees/Models/acacia.gem", dx, false);
-
     Model trex;
-    trex.init("resources/TRex.gem", dx, ModelAnim::ANIMATED);
+    trex.init("resources/TRex.gem", dx, ModelType::ANIMATED);
 
     Plane plane;
     plane.init(dx);
@@ -29,7 +27,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     //Sphere sphere;
     //sphere.init(20, 20, 2.0f, dx);
 
-    shaderManager.loadShader("shaderAnim", "VShaderAnim.hlsl", "PixelShader.hlsl", dx);
+    textureManager.load(dx, "resources/Textures/T-rex_Base_Color.png");
+
+    shaderManager.loadShader("shaderAnim", "VShaderAnim.hlsl", "TexPixelShader.hlsl", dx);
     shaderManager.loadShader("shaderStat", "VertexShader.hlsl", "PixelShader.hlsl", dx);
 
     AnimationInstance trexAnimInstance;
@@ -59,14 +59,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         worldMatrix = worldMatrix.translation(vec3(4, -1, 0));
         shaderManager.getShader("shaderAnim")->updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
         shaderManager.getShader("shaderAnim")->updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
+        shaderManager.getShader("shaderAnim")->updateTexturePS("tex", textureManager.find("resources/Textures/T-rex_Base_Color.png"), dx);
         shaderManager.applyShader("shaderAnim", dx);
         trex.draw(dx);
-
-        // Draw Acacia Tree
-        worldMatrix = worldMatrix.scaling(vec3(0.01f, 0.01f, 0.01f)) * worldMatrix.translation(vec3(0, 1, 0));
-        shaderManager.getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
-        shaderManager.applyShader("shaderStat", dx);
-        acaciaTree.draw(dx);
 
         //// Draw Sphere
         //Matrix sphereWorld = Matrix::translation(vec3(-3, 1, 0)); // Offset to the left

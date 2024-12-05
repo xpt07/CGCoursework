@@ -1,8 +1,5 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <map>
-#include "DXCore.h"
+#include "Texture.h"
 #include "ShaderReflection.h"
 
 class Shaders {
@@ -12,6 +9,7 @@ public:
 
     void updateConstantVS(const std::string& constantBufferName, const std::string& variableName, void* data);
     void updateConstantPS(const std::string& constantBufferName, const std::string& variableName, void* data);
+    void updateTexturePS(const std::string& textureName, ID3D11ShaderResourceView* srv, DXCore& core);
 
 private:
     ID3D11VertexShader* vertexShader = nullptr;

@@ -1,10 +1,7 @@
 #pragma once
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#include "core.h"
-#include "Shaders.h"
+#include <string>
+#include <map>
 #include "DXCore.h"
-
 class Texture {
 public:
 	ID3D11Texture2D* texture;

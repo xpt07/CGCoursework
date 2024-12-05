@@ -1,11 +1,9 @@
 #pragma once
 #include "GEMLoader.h"
 #include "Animation.h"
-#include "core.h"
-#include "Shaders.h"
-#include "DXCore.h"
+#include "ShaderManager.h"
 
-enum ModelAnim {
+enum ModelType {
 	STATIC,
 	ANIMATED
 };
@@ -138,8 +136,7 @@ public:
 	std::vector<std::string> textureFilenames;
 	Animation animation;
 
-	void init(std::string filename, DXCore& core, int i);
-	void init(std::string filename, DXCore& core, bool b);
+	void init(std::string filename, DXCore& core, ModelType type);
 
 	void draw(DXCore& core);
 };
