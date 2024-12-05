@@ -1,6 +1,6 @@
 #include "../inc/Window.h"
 #include "../inc/Geometry.h"
-#include "../inc/Shaders.h"
+#include "../inc/ShaderManager.h"
 #include "../inc/Timer.h"
 #include "../inc/Camera.h"
 #include "../inc/core.h"
@@ -8,8 +8,7 @@
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
     DXCore dx;
     Window win;
-    Shaders shaderAnim;
-    Shaders shaderStat;
+    ShaderManager shaderManager;
     Timer timer;
     Camera camera(vec3(vec3(0, 2, -20)));
 
@@ -30,8 +29,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     //Sphere sphere;
     //sphere.init(20, 20, 2.0f, dx);
 
-    shaderAnim.init("VShaderAnim.hlsl", "PixelShader.hlsl", dx);
-    shaderStat.init("VertexShader.hlsl", "PixelShader.hlsl", dx);
+    shaderManager.loadShader("shaderAnim", "VShaderAnim.hlsl", "PixelShader.hlsl", dx);
+    shaderManager.loadShader("shaderStat", "VertexShader.hlsl", "PixelShader.hlsl", dx);
 
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex.animation;
@@ -49,22 +48,24 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
         dx.clear();
 
-         //Draw Plane
-        worldMatrix = worldMatrix.translation(vec3(0, -1, 0)); // Place the plane below the cubes
-        shaderStat.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
-        shaderStat.apply(dx);
+        // Draw Plane
+        worldMatrix = worldMatrix.translation(vec3(0, -1, 0));
+        shaderManager.getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
+        shaderManager.applyShader("shaderStat", dx);
         plane.geometry.draw(dx);
 
-        trexAnimInstance.update("Idle", dt);
+        // Draw Animated Trex
+        trexAnimInstance.update("Run", dt);
         worldMatrix = worldMatrix.translation(vec3(4, -1, 0));
-        shaderAnim.updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
-        shaderAnim.updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
-        shaderAnim.apply(dx);
+        shaderManager.getShader("shaderAnim")->updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
+        shaderManager.getShader("shaderAnim")->updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
+        shaderManager.applyShader("shaderAnim", dx);
         trex.draw(dx);
 
+        // Draw Acacia Tree
         worldMatrix = worldMatrix.scaling(vec3(0.01f, 0.01f, 0.01f)) * worldMatrix.translation(vec3(0, 1, 0));
-        shaderStat.updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
-        shaderStat.apply(dx);
+        shaderManager.getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
+        shaderManager.applyShader("shaderStat", dx);
         acaciaTree.draw(dx);
 
         //// Draw Sphere
@@ -73,8 +74,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         //shader.apply(dx);
         //sphere.geometry.draw(dx);
 
-        shaderStat.updateConstantVS("staticMeshBuffer", "VP", &VP);
-        shaderAnim.updateConstantVS("animatedMeshBuffer", "VP", &VP);
+        shaderManager.getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "VP", &VP);
+        shaderManager.getShader("shaderAnim")->updateConstantVS("animatedMeshBuffer", "VP", &VP);
 
         win.processMessages();
         dx.present();

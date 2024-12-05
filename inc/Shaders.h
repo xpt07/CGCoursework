@@ -1,36 +1,30 @@
 #pragma once
 #include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <D3DCompiler.h>
-#include <d3d11shader.h>
-#include "ShaderReflection.h"
+#include <vector>
+#include <map>
 #include "DXCore.h"
+#include "ShaderReflection.h"
 
-#pragma comment(lib, "dxguid.lib")
-
-class Shaders
-{
+class Shaders {
 public:
-	ID3D11VertexShader* vertexShader;
-	ID3D11PixelShader* pixelShader;
-	ID3D11InputLayout* layout;
+    void init(const std::string& VS_filename, const std::string& PS_filename, DXCore& core);
+    void apply(DXCore& core);
 
-	std::vector<ConstantBuffer> psConstantBuffers;
-	std::vector<ConstantBuffer> vsConstantBuffers;
-	std::map<std::string, int> textureBindPointsVS;
-	std::map<std::string, int> textureBindPointsPS;
+    void updateConstantVS(const std::string& constantBufferName, const std::string& variableName, void* data);
+    void updateConstantPS(const std::string& constantBufferName, const std::string& variableName, void* data);
 
-	std::string readFile(std::string filename);
+private:
+    ID3D11VertexShader* vertexShader = nullptr;
+    ID3D11PixelShader* pixelShader = nullptr;
+    ID3D11InputLayout* layout = nullptr;
 
-	void compileVS(std::string VS_filename, DXCore& core);
-	void compilePS(std::string PS_filename, DXCore& core);
+    std::vector<ConstantBuffer> psConstantBuffers;
+    std::vector<ConstantBuffer> vsConstantBuffers;
+    std::map<std::string, int> textureBindPointsVS;
+    std::map<std::string, int> textureBindPointsPS;
 
-	void updateConstant(std::string constantBufferName, std::string variableName, void* data, std::vector<ConstantBuffer>& buffers);
-	void updateConstantVS(std::string constantBufferName, std::string variableName, void* data);
-	void updateConstantPS(std::string constantBufferName, std::string variableName, void* data);
-	void apply(DXCore& core);
-	void init(std::string VS_filename, std::string PS_filename, DXCore& core);
+    std::string readFile(const std::string& filename);
+    void compileVS(const std::string& VS_filename, DXCore& core);
+    void compilePS(const std::string& PS_filename, DXCore& core);
+    void updateConstant(const std::string& constantBufferName, const std::string& variableName, void* data, std::vector<ConstantBuffer>& buffers);
 };
-

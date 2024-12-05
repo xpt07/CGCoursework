@@ -26,8 +26,6 @@ void Texture::init(int width, int height, int channels, DXGI_FORMAT format, unsi
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
     core.device->CreateShaderResourceView(texture, &srvDesc, &srv);
-
-    //core.devicecontext->PSSetShaderResources(textureBindPointPS[name], 1, &srv);
 }
 
 void Texture::load(DXCore& core, std::string filename) {
