@@ -50,6 +50,7 @@ void initializeTextures(TextureManager& textureManager, DXCore& dx) {
     textureManager.load(dx, "Textures/bark09.png");
     textureManager.load(dx, "Textures/pine branch.png");
     textureManager.load(dx, "Textures/stump01.png");
+    textureManager.load(dx, "resources/NightSkyHDRI001_4K-TONEMAPPED.jpg"); // HDRI texture for the Skydome
 }
 
 // Function to initialize shaders
@@ -57,6 +58,7 @@ void initializeShaders(ShaderManager& shaderManager, DXCore& dx) {
     shaderManager.loadShader("shaderAnimTex", "VShaderAnim.hlsl", "TexPixelShader.hlsl", dx);
     shaderManager.loadShader("shaderStatTex", "VertexShader.hlsl", "TexPixelShader.hlsl", dx);
     shaderManager.loadShader("shaderStat", "VertexShader.hlsl", "PixelShader.hlsl", dx);
+    shaderManager.loadShader("shaderSkydome", "SkydomeVertexShader.hlsl", "SkydomePixelShader.hlsl", dx);
 }
 
 // Render trees
@@ -100,18 +102,31 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     auto plane = std::make_unique<Plane>();
     plane->init(*dx);
 
+    // Initialize Skydome
+    auto skydome = std::make_unique<Sphere>();
+    skydome->init(30, 30, 100.0f, *dx); // Large sphere for Skydome
+
     // Initialize textures and shaders
     initializeTextures(*textureManager, *dx);
     initializeShaders(*shaderManager, *dx);
+
+    // HDRI texture for Skydome
+    ID3D11ShaderResourceView* skydomeTexture = textureManager->find("resources/NightSkyHDRI001_4K-TONEMAPPED.jpg");
 
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex->animation;
     trexAnimInstance.resetAnimationTime();
 
+    // Initialize lighting
+    vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
+    float skylightIntensity = 0.2f;                  // Slightly increased intensity
+    vec3 skylightColor = vec3(0.1f, 0.1f, 0.3f);     // Dark blue skylight color, slightly brighter
+    vec3 ambientColor = vec3(0.1f, 0.1f, 0.15f);     // Dim bluish-gray ambient light for overall visibility
+
     // Generate random trees within a large radius
-    const int treeCount = 50;          // Number of trees
-    const float radius = 2000.0f;        // Radius of the circular area
+    const int treeCount = 300;          // Number of trees
+    const float radius = 9000.0f;        // Radius of the circular area
     const float minTreeScale = 0.005f; // Minimum tree size
     const float maxTreeScale = 0.02f;  // Maximum tree size
     std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, minTreeScale, maxTreeScale, radius);
@@ -136,8 +151,21 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
         dx->clear();
 
+        // Update lighting
+        shaderManager->getShader("shaderStatTex")->updateLight("LightBuffer", skylightDirection, skylightIntensity, skylightColor, ambientColor);
+        shaderManager->getShader("shaderAnimTex")->updateLight("LightBuffer", skylightDirection, skylightIntensity, skylightColor, ambientColor);
+        shaderManager->getShader("shaderStat")->updateLight("LightBuffer", skylightDirection, skylightIntensity, skylightColor, ambientColor);
+
+        // Render Skydome
+        Matrix skydomeMatrix =  Matrix::translation(vec3(camera->position));
+        shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "W", &skydomeMatrix);
+        shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "VP", &VP);
+        shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx); // Bind HDRI texture
+        shaderManager->applyShader("shaderSkydome", *dx);
+        skydome->geometry.draw(*dx);
+
         // Draw Plane
-        Matrix planeMatrix = Matrix::scaling(vec3(2.f, 2.f, 2.f)) * Matrix::translation(vec3(0, 0, 0));
+        Matrix planeMatrix = Matrix::scaling(vec3(10.f, 10.f, 10.f));
         shaderManager->getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &planeMatrix);
         shaderManager->applyShader("shaderStat", *dx);
         plane->geometry.draw(*dx);

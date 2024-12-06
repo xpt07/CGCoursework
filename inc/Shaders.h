@@ -1,4 +1,5 @@
 #pragma once
+#include "core.h"
 #include "Texture.h"
 #include "ShaderReflection.h"
 
@@ -10,7 +11,7 @@ public:
     void updateConstantVS(const std::string& constantBufferName, const std::string& variableName, void* data);
     void updateConstantPS(const std::string& constantBufferName, const std::string& variableName, void* data);
     void updateTexturePS(const std::string& textureName, ID3D11ShaderResourceView* srv, DXCore& core);
-
+    void updateLight(const std::string& bufferName, vec3 lightDir, float intensity, vec3 skylightColor, vec3 ambientColor);
 private:
     ID3D11VertexShader* vertexShader = nullptr;
     ID3D11PixelShader* pixelShader = nullptr;

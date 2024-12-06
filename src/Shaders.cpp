@@ -135,6 +135,28 @@ void Shaders::updateTexturePS(const std::string& textureName, ID3D11ShaderResour
     }
 }
 
+void Shaders::updateLight(const std::string& bufferName, vec3 lightDir, float intensity, vec3 skylightColor, vec3 ambientColor)
+{
+    struct LightData {
+        vec3 LightDirection;
+        float LightIntensity;
+        vec3 SkylightColor;
+        vec3 AmbientColor;
+    };
+
+    LightData light = { lightDir, intensity, skylightColor, ambientColor };
+
+    for (auto& buffer : psConstantBuffers) {
+        if (buffer.name == bufferName) {
+            buffer.update("LightDirection", &light.LightDirection);
+            buffer.update("LightIntensity", &light.LightIntensity);
+            buffer.update("SkylightColor", &light.SkylightColor);
+            buffer.update("AmbientColor", &light.AmbientColor);
+            return;
+        }
+    }
+}
+
 void Shaders::updateConstant(const std::string& constantBufferName, const std::string& variableName, void* data, std::vector<ConstantBuffer>& buffers) {
     for (auto& buffer : buffers) {
         if (buffer.name == constantBufferName) {
