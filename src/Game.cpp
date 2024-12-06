@@ -125,7 +125,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     vec3 ambientColor = vec3(0.1f, 0.1f, 0.15f);     // Dim bluish-gray ambient light for overall visibility
 
     // Generate random trees within a large radius
-    const int treeCount = 300;          // Number of trees
+    const int treeCount = 100;          // Number of trees
     const float radius = 9000.0f;        // Radius of the circular area
     const float minTreeScale = 0.005f; // Minimum tree size
     const float maxTreeScale = 0.02f;  // Maximum tree size
