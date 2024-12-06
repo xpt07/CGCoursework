@@ -31,6 +31,9 @@ public:
         position += moveDirection;
 
         handleMouseInput(win);
+
+        // Realign the up vector to prevent rolling
+        realignUpVector();
     }
 
     Matrix getViewMatrix() const {
@@ -59,7 +62,7 @@ private:
     }
 
     void rotateYaw(float angle) {
-        Quaternion yaw = Quaternion::fromAxisAngle(up, angle);
+        Quaternion yaw = Quaternion::fromAxisAngle(vec3(0, 1, 0), angle); // Fixed world up (0, 1, 0)
         forward = yaw * forward;
         right = yaw * right;
     }
@@ -69,9 +72,16 @@ private:
         vec3 newForward = pitch * forward;
 
         // Prevent camera from flipping
-        if (abs(newForward.dot(up)) < 0.99f) {
+        if (abs(newForward.dot(vec3(0, 1, 0))) < 0.99f) { // Use fixed world up (0, 1, 0)
             forward = newForward;
-            up = right.cross(forward).normalize();
         }
+    }
+
+    void realignUpVector() {
+        // Recalculate right vector to ensure it's perpendicular to the fixed world up
+        right = forward.cross(vec3(0, 1, 0)).normalize();
+
+        // Recalculate up to align with the fixed world up
+        up = right.cross(forward).normalize();
     }
 };

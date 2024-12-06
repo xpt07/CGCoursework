@@ -135,8 +135,9 @@ public:
 	std::vector<Mesh> meshes;
 	std::vector<std::string> textureFilenames;
 	Animation animation;
+	ModelType type;
 
-	void init(std::string filename, DXCore& core, ModelType type);
+	void init(std::string filename, DXCore& core, ModelType modelType);
 
-	void draw(DXCore& core);
+	void draw(DXCore& core, Shaders& shader, TextureManager& textureManager);
 };

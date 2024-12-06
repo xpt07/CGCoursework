@@ -6,6 +6,7 @@ class Texture {
 public:
 	ID3D11Texture2D* texture;
 	ID3D11ShaderResourceView* srv;
+	ID3D11RenderTargetView* rtv;
 
 	void init(int width, int height, int channels, DXGI_FORMAT format, unsigned char *data, DXCore& core);
 	void load(DXCore& core, std::string filename);
@@ -20,6 +21,7 @@ class TextureManager
 {
 public:
 	std::map<std::string, Texture*> textures;
+
 	void load(DXCore& core, std::string filename)
 	{
 		std::map<std::string, Texture*>::iterator it = textures.find(filename);

@@ -1,4 +1,5 @@
 #include "../inc/Geometry.h"
+#include "../inc/Texture.h"
 
 void Mesh::init(void* vertices, int vertexSizeInBytes, int numVertices, unsigned int* indices, int numIndices, DXCore& core)
 {
@@ -172,8 +173,9 @@ void Sphere::init(int rings, int segments, float radius, DXCore& core) {
 	geometry.init(vertices, indices, core);
 }
 
-void Model::init(std::string filename, DXCore& core, ModelType type)
+void Model::init(std::string filename, DXCore& core, ModelType modelType)
 {
+	type = modelType;
 	GEMLoader::GEMModelLoader loader;
 	std::vector<GEMLoader::GEMMesh> gemmeshes;
 	GEMLoader::GEMAnimation gemanimation;
@@ -190,7 +192,7 @@ void Model::init(std::string filename, DXCore& core, ModelType type)
 				memcpy(&v, &gemmeshes[i].verticesAnimated[j], sizeof(ANIMATED_VERTEX));
 				vertices.push_back(v);
 			}
-
+			textureFilenames.push_back(gemmeshes[i].material.find("diffuse").getValue());
 			mesh.init(vertices, gemmeshes[i].indices, core);
 			meshes.push_back(mesh);
 		}
@@ -245,10 +247,11 @@ void Model::init(std::string filename, DXCore& core, ModelType type)
 	}
 }
 
-void Model::draw(DXCore& core)
+void Model::draw(DXCore& core, Shaders& shader, TextureManager& textureManager)
 {
 	for (int i = 0; i < meshes.size(); i++)
 	{
+		shader.updateTexturePS("tex", textureManager.find(textureFilenames[i]), core);
 		meshes[i].draw(core);
 	}
 }
