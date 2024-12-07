@@ -155,7 +155,7 @@ public:
     }
 
     // Max and Min methods
-    vec3 Max(const vec3& v1, const vec3& v2)
+    static vec3 Max(const vec3& v1, const vec3& v2)
     {
         return vec3(max(v1.v[0], v2.v[0]),
                     max(v1.v[1], v2.v[1]),
@@ -168,7 +168,7 @@ public:
     }
 
 
-    vec3 Min(const vec3& v1, const vec3& v2)
+    static vec3 Min(const vec3& v1, const vec3& v2)
     {
         return vec3(min(v1.v[0], v2.v[0]),
                     min(v1.v[1], v2.v[1]),
@@ -557,11 +557,37 @@ public:
         return mat;
     }
 
-    static Matrix rotateX(float theta) {
+    static Matrix RotateX(float theta) {
         Matrix mat;
         float ct = cosf(theta);
         float st = sinf(theta);
         mat.m[5] = ct;
+        mat.m[6] = -st;
+        mat.m[9] = st;
+        mat.m[10] = ct;
+        return mat;
+    }
+
+    static Matrix RotateY(float theta) {
+        Matrix mat;
+        float ct = cosf(theta);
+        float st = sinf(theta);
+        mat.m[0] = ct;
+        mat.m[2] = st;
+        mat.m[8] = -st;
+        mat.m[10] = ct;
+        return mat;
+    }
+
+    static Matrix RotateZ(float theta) {
+        Matrix mat;
+        float ct = cosf(theta);
+        float st = sinf(theta);
+        mat.m[0] = ct;
+        mat.m[1] = -st;
+        mat.m[4] = st;
+        mat.m[5] = ct;
+        return mat;
     }
 
     static Matrix Projection(float _fov, float _aspect, float _near, float _far)
@@ -830,10 +856,5 @@ public:
         g = g * val;
         b = b * val;
         return *this;
-    }
-
-    // Method to print the color for debugging
-    void print() const {
-        std::cout << "Colour(" << r << ", " << g << ", " << b << ")\n";
     }
 };

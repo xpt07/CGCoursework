@@ -3,11 +3,17 @@
 #include "../inc/Timer.h"
 #include "../inc/Camera.h"
 #include "../inc/core.h"
+#include "../inc/AnimationController.h"
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 #include <cmath>
 #include <memory>
+
+// Helper function to calculate distance
+static float calculateDistance(const vec3& a, const vec3& b) {
+    return (a - b).getLength();
+}
 
 // Helper function to generate a random float within a range
 static float randomFloat(float min, float max) {
@@ -79,7 +85,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     auto win = std::make_unique<Window>();
     auto shaderManager = std::make_unique<ShaderManager>();
     auto timer = std::make_unique<Timer>();
-    auto camera = std::make_unique<Camera>(vec3(0, 2, -20));
+    auto camera = std::make_unique<Camera>(vec3(0, 2, -50));
     auto textureManager = std::make_unique<TextureManager>();
 
     // Random seed for tree placement
@@ -116,7 +122,27 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex->animation;
-    trexAnimInstance.resetAnimationTime();
+    // T-Rex position
+    vec3 trexPosition = vec3(0, 0, 50); // Start at some distance from the camera
+
+    // Initialize AnimationController
+    AnimationController animationController;
+
+    // Add animation states
+    animationController.addState("Idle", [&]() {
+        trexAnimInstance.resetAnimationTime();
+        trexAnimInstance.currentAnimation = "Idle";
+        });
+
+    animationController.addState("Run", [&]() {
+        trexAnimInstance.resetAnimationTime();
+        trexAnimInstance.currentAnimation = "Run";
+        });
+
+    animationController.addState("attack", [&]() {
+        trexAnimInstance.resetAnimationTime();
+        trexAnimInstance.currentAnimation = "attack";
+        });
 
     // Initialize lighting
     vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
@@ -130,6 +156,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     const float minTreeScale = 0.005f; // Minimum tree size
     const float maxTreeScale = 0.02f;  // Maximum tree size
     std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, minTreeScale, maxTreeScale, radius);
+
+    Matrix worldMatrix;
 
     while (true) {
         float dt = timer->update();
@@ -157,26 +185,62 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         shaderManager->getShader("shaderStat")->updateLight("LightBuffer", skylightDirection, skylightIntensity, skylightColor, ambientColor);
 
         // Render Skydome
-        Matrix skydomeMatrix =  Matrix::translation(vec3(camera->position));
-        shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "W", &skydomeMatrix);
+        worldMatrix =  Matrix::translation(vec3(camera->position));
+        shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "VP", &VP);
         shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx); // Bind HDRI texture
         shaderManager->applyShader("shaderSkydome", *dx);
         skydome->geometry.draw(*dx);
 
         // Draw Plane
-        Matrix planeMatrix = Matrix::scaling(vec3(10.f, 10.f, 10.f));
-        shaderManager->getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &planeMatrix);
+        worldMatrix = Matrix::scaling(vec3(10.f, 10.f, 10.f));
+        shaderManager->getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shaderManager->applyShader("shaderStat", *dx);
         plane->geometry.draw(*dx);
 
         // Render trees
         renderTrees(trees, pine.get(), shaderManager.get(), *dx, *textureManager);
 
-        // Draw Animated T-Rex
-        trexAnimInstance.update("roar", dt);
-        Matrix trexMatrix = Matrix::translation(vec3(0, 0, 0));
-        shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "W", &trexMatrix);
+        // Update T-Rex behavior
+        float distanceToCamera = calculateDistance(trexPosition, camera->position);
+
+        if (distanceToCamera < 10.f) {
+            animationController.transitionTo("attack");
+        }
+        else if (distanceToCamera < 80.0f) {
+            animationController.transitionTo("Run");
+            vec3 directionToCamera = (camera->position - trexPosition).normalize();
+            trexPosition += directionToCamera * dt * 5.0f; // Move toward the camera
+        }
+        else {
+            animationController.transitionTo("Idle");
+        }
+
+        // Update T-Rex animation
+        trexAnimInstance.update(animationController.getCurrentState(), dt);
+
+        // Calculate the direction vector to the camera, projected to the XZ-plane
+        vec3 directionToCamera = camera->position - trexPosition;
+        directionToCamera.y = 0.0f; // Ignore vertical component
+        directionToCamera = directionToCamera.normalize();
+
+        // Define the default forward direction in the XZ-plane
+        vec3 forwardDirection(0, 0, 1); // Default facing along Z-axis
+
+        // Calculate the angle between the forward direction and the direction to the camera
+        float dotProduct = forwardDirection.dot(directionToCamera);
+        float rotationAngle = acosf(dotProduct); // Ensure value is in valid range for acos
+
+        // Determine the rotation axis (always the Y-axis for horizontal rotation)
+        vec3 rotationAxis = vec3(0, 1, 0);
+
+        // Check the sign of the cross product to determine clockwise/counterclockwise rotation
+        if (forwardDirection.cross(directionToCamera).y < 0) {
+            rotationAngle = -rotationAngle; // Negate angle for clockwise rotation
+        }
+
+        worldMatrix = Matrix::translation(vec3(trexPosition.x, 0, trexPosition.z)) * Matrix::RotateY(rotationAngle);
+        shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
         shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
         shaderManager->applyShader("shaderAnimTex", *dx);
         trex->draw(*dx, *shaderManager->getShader("shaderAnimTex"), *textureManager);

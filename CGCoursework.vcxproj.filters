@@ -57,6 +57,12 @@
     <ClInclude Include="inc\ShaderManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\AABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\AnimationController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Window.cpp">
