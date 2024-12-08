@@ -146,8 +146,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
     // Initialize lighting
     vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
-    float skylightIntensity = 0.2f;                  // Slightly increased intensity
-    vec3 skylightColor = vec3(0.1f, 0.1f, 0.3f);     // Dark blue skylight color, slightly brighter
+    float skylightIntensity = 0.1f;                  // Slightly increased intensity
+    vec3 skylightColor = vec3(0.1f, 0.1f, 0.15f);     // Dark blue skylight color, slightly brighter
     vec3 ambientColor = vec3(0.1f, 0.1f, 0.15f);     // Dim bluish-gray ambient light for overall visibility
 
     // Generate random trees within a large radius

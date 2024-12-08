@@ -4,12 +4,6 @@ cbuffer staticMeshBuffer
     float4x4 VP; // View-Projection matrix
 };
 
-cbuffer LightBuffer
-{
-    float3 LightDirection; // Direction of the light
-    float LightIntensity; // Intensity of the skylight
-};
-
 struct VS_INPUT
 {
     float4 Pos : POS; // Vertex position
