@@ -3,6 +3,9 @@
 #include <functional>
 
 class AnimationController {
+private:
+    std::unordered_map<std::string, std::function<void()>> states;
+    std::string currentState;
 public:
     void addState(const std::string& state, std::function<void()> onEnter) {
         states[state] = onEnter;
@@ -18,8 +21,4 @@ public:
     const std::string& getCurrentState() const {
         return currentState;
     }
-
-private:
-    std::unordered_map<std::string, std::function<void()>> states;
-    std::string currentState;
 };

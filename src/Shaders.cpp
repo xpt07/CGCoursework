@@ -170,7 +170,6 @@ void Shaders::apply(DXCore& core) {
     core.devicecontext->IASetInputLayout(layout);
     core.devicecontext->VSSetShader(vertexShader, nullptr, 0);
     core.devicecontext->PSSetShader(pixelShader, nullptr, 0);
-    //core.devicecontext->PSSetShaderResources()
 
     for (auto& buffer : vsConstantBuffers) {
         buffer.upload(core);
