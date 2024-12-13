@@ -10,7 +10,7 @@
 #include <cmath>
 #include <memory>
 
-// Helper function to calculate distance
+// Helper function to calculate distance between two 3D points
 static float calculateDistance(const vec3& a, const vec3& b) {
     return (a - b).getLength();
 }
@@ -22,18 +22,18 @@ static float randomFloat(float min, float max) {
 
 // Structure to store information about a tree instance
 struct TreeInstance {
-    vec3 position;
-    float scale;
+    vec3 position;  // Position of the tree
+    float scale;    // Scale of the tree
 };
 
-// Generate random trees within a large circular radius
+// Generate a set of randomly placed trees within a specified circular area
 std::vector<TreeInstance> generateRandomTreesInRadius(
     int count, float minScale, float maxScale, float radius
 ) {
     std::vector<TreeInstance> trees;
 
     for (int i = 0; i < count; ++i) {
-        float angle = randomFloat(0.0f, 2.0f * M_PI); // Random angle in radians
+        float angle = randomFloat(0.0f, 2.0f * M_PI); // Random angle
         float distance = radius * sqrt(randomFloat(0.0f, 1.0f));  // Square root for even distribution
 
         TreeInstance tree;
@@ -50,7 +50,7 @@ std::vector<TreeInstance> generateRandomTreesInRadius(
     return trees;
 }
 
-// Function to initialize textures
+// Load textures into the texture manager
 void initializeTextures(TextureManager& textureManager, DXCore& dx) {
     textureManager.load(dx, "Textures/T-rex_Base_Color.png");
     textureManager.load(dx, "Textures/bark09.png");
@@ -59,7 +59,7 @@ void initializeTextures(TextureManager& textureManager, DXCore& dx) {
     textureManager.load(dx, "resources/NightSkyHDRI001_4K-TONEMAPPED.jpg"); // HDRI texture for the Skydome
 }
 
-// Function to initialize shaders
+// Load and compile the shaders.
 void initializeShaders(ShaderManager& shaderManager, DXCore& dx) {
     shaderManager.loadShader("shaderAnimTex", "VShaderAnim.hlsl", "TexPixelShader.hlsl", dx);
     shaderManager.loadShader("shaderStatTex", "VertexShader.hlsl", "TexPixelShader.hlsl", dx);
@@ -70,10 +70,15 @@ void initializeShaders(ShaderManager& shaderManager, DXCore& dx) {
 // Render trees
 void renderTrees(const std::vector<TreeInstance>& trees, Model* pine, ShaderManager* shaderManager, DXCore& dx, TextureManager& textureManager) {
     for (const auto& tree : trees) {
+        // Create transformation matrix for each tree
         Matrix treeMatrix = Matrix::scaling(vec3(tree.scale, tree.scale, tree.scale)) *
             Matrix::translation(tree.position);
+
+        // Update shader with tree's transformation
         shaderManager->getShader("shaderStatTex")->updateConstantVS("staticMeshBuffer", "W", &treeMatrix);
         shaderManager->applyShader("shaderStatTex", dx);
+        
+        // Render the tree model
         pine->draw(dx, *shaderManager->getShader("shaderStatTex"), textureManager);
     }
 }
@@ -122,13 +127,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex->animation;
-    // T-Rex position
-    vec3 trexPosition = vec3(0, 0, 50); // Start at some distance from the camera
+    vec3 trexPosition = vec3(0, 0, 50); // Initial position of T-Rex
 
-    // Initialize AnimationController
+    // Animation controller setup
     AnimationController animationController;
-
-    // Add animation states
     animationController.addState("Idle", [&]() {
         trexAnimInstance.resetAnimationTime();
         trexAnimInstance.currentAnimation = "Idle";
@@ -144,7 +146,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         trexAnimInstance.currentAnimation = "attack";
         });
 
-    // Initialize lighting
+    // Lighting setup
     vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
     float skylightIntensity = 0.1f;                  // Slightly increased intensity
     vec3 skylightColor = vec3(0.1f, 0.1f, 0.15f);     // Dark blue skylight color, slightly brighter
@@ -173,6 +175,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
             camera->update(*win, dt); // Update camera only if control is enabled
         }
 
+        // Compute View-Projection matrix
         Matrix view = camera->getViewMatrix();
         Matrix projection = projection.Projection(M_PI / 4.0f, float(win->width) / win->height, 0.1f, 100.0f);
         Matrix VP = projection.mul(view);
@@ -201,9 +204,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         // Render trees
         renderTrees(trees, pine.get(), shaderManager.get(), *dx, *textureManager);
 
-        // Update T-Rex behavior
+        // Handle T-Rex animations based on player distance
         float distanceToCamera = calculateDistance(trexPosition, camera->position);
-
         if (distanceToCamera < 10.f) {
             animationController.transitionTo("attack");
         }
@@ -224,21 +226,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         directionToCamera.y = 0.0f; // Ignore vertical component
         directionToCamera = directionToCamera.normalize();
 
-        // Define the default forward direction in the XZ-plane
-        vec3 forwardDirection(0, 0, 1); // Default facing along Z-axis
-
-        // Calculate the angle between the forward direction and the direction to the camera
-        float dotProduct = forwardDirection.dot(directionToCamera);
-        float rotationAngle = acosf(dotProduct); // Ensure value is in valid range for acos
-
-        // Determine the rotation axis (always the Y-axis for horizontal rotation)
-        vec3 rotationAxis = vec3(0, 1, 0);
-
-        // Check the sign of the cross product to determine clockwise/counterclockwise rotation
+        // Calculate T-Rex orientation towards the camera
+        vec3 directionToCamera = (camera->position - trexPosition).normalize();
+        vec3 forwardDirection(0, 0, 1); // Default forward direction
+        float rotationAngle = acosf(forwardDirection.dot(directionToCamera));
         if (forwardDirection.cross(directionToCamera).y < 0) {
-            rotationAngle = -rotationAngle; // Negate angle for clockwise rotation
+            rotationAngle = -rotationAngle; // Adjust rotation for clockwise/counterclockwise
         }
 
+        // Apply transformations to T-Rex model
         worldMatrix = Matrix::translation(vec3(trexPosition.x, 0, trexPosition.z)) * Matrix::RotateY(rotationAngle);
         shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "W", &worldMatrix);
         shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "bones", trexAnimInstance.matrices);
@@ -250,7 +246,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         shaderManager->getShader("shaderStat")->updateConstantVS("staticMeshBuffer", "VP", &VP);
         shaderManager->getShader("shaderAnimTex")->updateConstantVS("animatedMeshBuffer", "VP", &VP);
 
-        win->processMessages();
-        dx->present();
+        win->processMessages(); // Handle window events
+        dx->present();          // Present the rendered frame
     }
 }
