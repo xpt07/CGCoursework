@@ -1,4 +1,0 @@
-model_path: resources/TRex.gem
-position: 0.0, 0.0, 50.0
-rotation: 0.0, 0.0, 0.0
-scale: 1.0
