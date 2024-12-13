@@ -41,6 +41,19 @@ void Mesh::draw(DXCore& core)
 	core.devicecontext->DrawIndexed(indicesSize, 0, 0);
 }
 
+void Plane::init(DXCore& core) {
+	std::vector<STATIC_VERTEX> vertices;
+	vertices.push_back(addVertex(vec3(-15, 0, -15), vec3(0, 1, 0), 0, 0));
+	vertices.push_back(addVertex(vec3(15, 0, -15), vec3(0, 1, 0), 1, 0));
+	vertices.push_back(addVertex(vec3(-15, 0, 15), vec3(0, 1, 0), 0, 1));
+	vertices.push_back(addVertex(vec3(15, 0, 15), vec3(0, 1, 0), 1, 1));
+	std::vector<unsigned int> indices;
+	indices.push_back(2); indices.push_back(1); indices.push_back(0);
+	indices.push_back(1); indices.push_back(2); indices.push_back(3);
+	geometry.init(vertices, indices, core);
+
+}
+
 void Triangle::init(DXCore& core) {
 	Vertex vertices[3];
 	vertices[0].position = vec3(0, 1.0f, 0);

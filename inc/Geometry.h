@@ -1,5 +1,3 @@
-// Geometry.h: Defines various classes and structures to handle 3D geometry, such as meshes, planes, cubes, and spheres,
-// and their interaction with DirectX Core (DXCore) for rendering.
 #pragma once
 #include "GEMLoader.h"
 #include "Animation.h"
@@ -78,11 +76,13 @@ public:
 	void draw(DXCore& core);
 };
 
+// Plane class generates a flat surface for rendering.
 class Plane
 {
 public:
-	Mesh geometry;
+	Mesh geometry;	// Mesh representation of the plane
 
+	// Helper function to create a STATIC_VERTEX for the plane.
 	STATIC_VERTEX addVertex(vec3 p, vec3 n, float tu, float tv)
 	{
 		STATIC_VERTEX v;
@@ -94,41 +94,16 @@ public:
 		return v;
 	}
 
-	void init(DXCore& core) {
-		std::vector<STATIC_VERTEX> vertices;
-		vertices.push_back(addVertex(vec3(-15, 0, -15), vec3(0, 1, 0), 0, 0));
-		vertices.push_back(addVertex(vec3(15, 0, -15), vec3(0, 1, 0), 1, 0));
-		vertices.push_back(addVertex(vec3(-15, 0, 15), vec3(0, 1, 0), 0, 1));
-		vertices.push_back(addVertex(vec3(15, 0, 15), vec3(0, 1, 0), 1, 1));
-		std::vector<unsigned int> indices;
-		indices.push_back(2); indices.push_back(1); indices.push_back(0);
-		indices.push_back(1); indices.push_back(2); indices.push_back(3);
-		geometry.init(vertices, indices, core);
-
-	}
-};
-
-class Cube {
-public:
-	Mesh geometry;
-
-	STATIC_VERTEX addVertex(vec3 p, vec3 n, float tu, float tv) {
-		STATIC_VERTEX v;
-		v.pos = p;
-		v.normal = n;
-		v.tangent = vec3();
-		v.tu = tu;
-		v.tv = tv;
-		return v;
-	}
-
+	// Initializes the plane as a flat 2x2 quad with vertices and indices.
 	void init(DXCore& core);
 };
 
-class Sphere {
+// Cube class generates a 3D cube for rendering.
+class Cube {
 public:
-	Mesh geometry;
+	Mesh geometry;	// Mesh representation of the cube
 
+	// Helper function to create a STATIC_VERTEX for the cube
 	STATIC_VERTEX addVertex(vec3 p, vec3 n, float tu, float tv) {
 		STATIC_VERTEX v;
 		v.pos = p;
@@ -139,17 +114,43 @@ public:
 		return v;
 	}
 
+	// Initializes the cube by creating its vertices and indices.
+	void init(DXCore& core);
+};
+
+// Sphere class generates a 3D sphere for rendering.
+// The sphere is created by subdividing into rings and segments.
+class Sphere {
+public:
+	Mesh geometry;	// Mesh representation of the sphere
+
+	// Helper function to create a STATIC_VERTEX for the sphere.
+	STATIC_VERTEX addVertex(vec3 p, vec3 n, float tu, float tv) {
+		STATIC_VERTEX v;
+		v.pos = p;
+		v.normal = n;
+		v.tangent = vec3();
+		v.tu = tu;
+		v.tv = tv;
+		return v;
+	}
+
+	// Initializes the sphere with specified rings, segments, and radius.
 	void init(int rings, int segments, float radius, DXCore& core);
 };
 
+// Model class represents a 3D model, which can consist of multiple meshes.
+// Supports both static and animated models.
 class Model {
 public:
-	std::vector<Mesh> meshes;
-	std::vector<std::string> textureFilenames;
-	Animation animation;
-	ModelType type;
+	std::vector<Mesh> meshes;						// List of meshes in the model
+	std::vector<std::string> textureFilenames;		// Textures associated with the model
+	Animation animation;							// Animation data for animated models
+	ModelType type;									// Type of the model (STATIC or ANIMATED)
 
+	// Initializes the model by loading data from a file.
 	void init(std::string filename, DXCore& core, ModelType modelType);
 
+	// Draws the model using the provided shaders and texture manager.
 	void draw(DXCore& core, Shaders& shader, TextureManager& textureManager);
 };
