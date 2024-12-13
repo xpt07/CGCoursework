@@ -6,14 +6,15 @@
 std::string Shaders::readFile(const std::string& filename) {
     std::ifstream file(filename);
     std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    buffer << file.rdbuf(); // Read the entire file into a string buffer.
+    return buffer.str();    // Return the shader source as a string.
 }
 
 void Shaders::compileVS(const std::string& VS_filename, DXCore& core) {
     ID3DBlob* compiledVertexShader = nullptr;
     ID3DBlob* status = nullptr;
 
+    // Compile the vertex shader source code.
     HRESULT hr = D3DCompile(
         VS_filename.c_str(),
         VS_filename.length(),
@@ -36,7 +37,7 @@ void Shaders::compileVS(const std::string& VS_filename, DXCore& core) {
         }
         throw std::runtime_error("Unknown error during Vertex Shader compilation.");
     }
-
+    // Create the vertex shader
     core.device->CreateVertexShader(
         compiledVertexShader->GetBufferPointer(),
         compiledVertexShader->GetBufferSize(),
@@ -44,6 +45,7 @@ void Shaders::compileVS(const std::string& VS_filename, DXCore& core) {
         &vertexShader
     );
 
+    // Define the vertex input layout to match the shader's input structure.
     D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
         { "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -53,6 +55,7 @@ void Shaders::compileVS(const std::string& VS_filename, DXCore& core) {
         { "BONEWEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
 
+    // Create the input layout for the vertex shader.
     core.device->CreateInputLayout(
         layoutDesc,
         _countof(layoutDesc),
@@ -71,6 +74,7 @@ void Shaders::compilePS(const std::string& PS_filename, DXCore& core) {
     ID3DBlob* compiledPixelShader = nullptr;
     ID3DBlob* status = nullptr;
 
+    // Compile the pixel shader source code.
     HRESULT hr = D3DCompile(
         PS_filename.c_str(),
         PS_filename.length(),
@@ -94,6 +98,7 @@ void Shaders::compilePS(const std::string& PS_filename, DXCore& core) {
         throw std::runtime_error("Unknown error during Pixel Shader compilation.");
     }
 
+    // Create the pixel shader
     core.device->CreatePixelShader(
         compiledPixelShader->GetBufferPointer(),
         compiledPixelShader->GetBufferSize(),

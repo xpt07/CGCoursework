@@ -8,47 +8,47 @@ Window* window;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg)
 	{
-	case WM_DESTROY:
+	case WM_DESTROY:	// Handle window destruction (e.g., user closes the window).
+	{
+		PostQuitMessage(0);	// Signal the application to quit.
+		exit(0);			// Exit immediately.
+		return 0;
+	}
+	case WM_CLOSE:	// Handle window close requests.
 	{
 		PostQuitMessage(0);
 		exit(0);
 		return 0;
 	}
-	case WM_CLOSE:
+	case WM_KEYDOWN:	// Handle key press events.
 	{
-		PostQuitMessage(0);
-		exit(0);
-		return 0;
-	}
-	case WM_KEYDOWN:
-	{
-		window->keys[(unsigned int)wParam] = true;
+		window->keys[(unsigned int)wParam] = true;	// Set the key state to "pressed."
 		return 0;
 	}
 	case WM_KEYUP:
 	{
-		window->keys[(unsigned int)wParam] = false;
+		window->keys[(unsigned int)wParam] = false;	// Set the key state to "released."
 		return 0;
 	}
-	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDOWN:	// Handle left mouse button press.
 	{
-		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));
-		window->mouseButtons[0] = true;
+		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));	// Update mouse position.
+		window->mouseButtons[0] = true;	// Mark the left button as pressed.
 		return 0;
 	}
-	case WM_LBUTTONUP:
+	case WM_LBUTTONUP:	// Handle left mouse button release.
 	{
-		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));
-		window->mouseButtons[0] = false;
+		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));	// Update mouse position.
+		window->mouseButtons[0] = false;	// Mark the left button as released.
 		return 0;
 	}
-	case WM_MOUSEMOVE:
+	case WM_MOUSEMOVE:	// Handle mouse movement.
 	{
-		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));
+		window->updateMouse(WINDOW_GET_X_LPARAM(lParam), WINDOW_GET_Y_LPARAM(lParam));	// Update mouse position.
 		return 0;
 	}
 
-	default:
+	default:	// Handle all other messages with the default Windows procedure.
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 }
@@ -61,6 +61,7 @@ void Window::init(int window_width, int window_height, const string window_name,
 	width = window_width;
 	height = window_height;
 
+	// Define window class properties.
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
@@ -83,6 +84,7 @@ void Window::init(int window_width, int window_height, const string window_name,
 
 	memset(keys, 0, 256 * sizeof(char));
 
+	// Set the global window pointer to this instance.
 	window = this;
 }
 
@@ -104,7 +106,7 @@ void Window::processMessages()
 
 void Window::centerCursor()
 {
-	POINT center = { width / 2, height / 2 };
-	ClientToScreen(hwnd, &center);
-	SetCursorPos(center.x, center.y);
+	POINT center = { width / 2, height / 2 };	// Calculate the center point.
+	ClientToScreen(hwnd, &center);				// Convert to screen coordinates.
+	SetCursorPos(center.x, center.y);			// Move the cursor to the center.
 }
