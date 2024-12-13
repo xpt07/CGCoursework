@@ -26,11 +26,6 @@ void Mesh::init(std::vector<STATIC_VERTEX> vertices, std::vector<unsigned int> i
 	init(&vertices[0], sizeof(STATIC_VERTEX), vertices.size(), &indices[0], indices.size(), core);
 }
 
-void Mesh::init(std::vector<ANIMATED_VERTEX> vertices, std::vector<unsigned int> indices, DXCore& core)
-{
-	init(&vertices[0], sizeof(ANIMATED_VERTEX), vertices.size(), &indices[0], indices.size(), core);
-}
-
 void Mesh::draw(DXCore& core)
 {
 	UINT offsets = 0;
