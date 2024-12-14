@@ -27,7 +27,8 @@ bool loadLevelData(
     std::string& trexMeshPath, ModelType& trexModelType, vec3& trexInitialPosition,
     vec3& planeScale, std::string& skyboxTexturePath, float& skyboxRadius,
     vec3& skylightDirection, float& skylightIntensity, vec3& skylightColor, vec3& ambientColor,
-    vec3& cameraPosition, vec3& cameraForward, float& cameraSpeed, float& cameraSensitivity
+    vec3& cameraPosition, vec3& cameraForward, float& cameraSpeed, float& cameraSensitivity,
+    std::string& pineMeshPath, ModelType& pineModelType, int& treeCount, float& treeMinScale, float& treeMaxScale, float& treeRadius
 ) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -39,7 +40,7 @@ bool loadLevelData(
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '#') continue; // Skip empty lines or comments
 
-        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting" || line == "Camera") {
+        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting" || line == "Camera" || line == "Trees") {
             section = line;
         }
         else {
@@ -73,6 +74,16 @@ bool loadLevelData(
                     else if (key == "Forward") cameraForward = parseVec3(value).normalize();
                     else if (key == "Speed") cameraSpeed = std::stof(value);
                     else if (key == "Sensitivity") cameraSensitivity = std::stof(value);
+                }
+                else if (section == "Trees") {
+                    if (key == "Mesh") pineMeshPath = value;
+                    else if (key == "ModelType") {
+                        pineModelType = (value == "STATIC") ? ModelType::STATIC : ModelType::ANIMATED;
+                    }
+                    else if (key == "Count") treeCount = std::stoi(value);
+                    else if (key == "MinScale") treeMinScale = std::stof(value);
+                    else if (key == "MaxScale") treeMaxScale = std::stof(value);
+                    else if (key == "Radius") treeRadius = std::stof(value);
                 }
             }
         }
@@ -174,17 +185,20 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     ShowCursor(FALSE); // Start with cursor hidden
 
     // Level data variables
-    std::string trexMeshPath, skyboxTexturePath;
-    ModelType trexModelType;
+    std::string trexMeshPath, skyboxTexturePath, pineMeshPath;
+    ModelType trexModelType, pineModelType;
     vec3 trexInitialPosition, planeScale, skylightDirection, skylightColor, ambientColor;
     vec3 cameraPosition, cameraForward;
+    int treeCount = 0;
     float skyboxRadius, skylightIntensity, cameraSpeed, cameraSensitivity;
+    float treeMinScale, treeMaxScale, treeRadius;
 
     // Load level data
     if (!loadLevelData("level.txt", trexMeshPath, trexModelType, trexInitialPosition,
         planeScale, skyboxTexturePath, skyboxRadius,
         skylightDirection, skylightIntensity, skylightColor, ambientColor,
-        cameraPosition, cameraForward, cameraSpeed, cameraSensitivity)) {
+        cameraPosition, cameraForward, cameraSpeed, cameraSensitivity,
+        pineMeshPath, pineModelType, treeCount, treeMinScale, treeMaxScale, treeRadius)) {
         return -1; // Exit if loading fails
     }
 
@@ -196,7 +210,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     trex->init(trexMeshPath, *dx, trexModelType);
 
     auto pine = std::make_unique<Model>();
-    pine->init("resources/Pine/pine.gem", *dx, ModelType::STATIC);
+    pine->init(pineMeshPath, *dx, pineModelType);
 
     auto plane = std::make_unique<Plane>();
     plane->init(*dx);
@@ -234,12 +248,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         trexAnimInstance.currentAnimation = "attack";
         });
 
-    // Generate random trees within a large radius
-    const int treeCount = 100;          // Number of trees
-    const float radius = 9000.0f;        // Radius of the circular area
-    const float minTreeScale = 0.005f; // Minimum tree size
-    const float maxTreeScale = 0.02f;  // Maximum tree size
-    std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, minTreeScale, maxTreeScale, radius);
+    // Generate trees based on loaded parameters
+    std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, treeMinScale, treeMaxScale, treeRadius);
 
     Matrix worldMatrix;
 
@@ -309,9 +319,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         directionToCamera = directionToCamera.normalize();
 
         // Calculate T-Rex orientation towards the camera
-        vec3 forwardDirection(0, 0, 1); // Default forward direction
-        float rotationAngle = acosf(forwardDirection.dot(directionToCamera));
-        if (forwardDirection.cross(directionToCamera).y < 0) {
+        float rotationAngle = acosf(cameraForward.dot(directionToCamera));
+        if (cameraForward.cross(directionToCamera).y < 0) {
             rotationAngle = -rotationAngle; // Adjust rotation for clockwise/counterclockwise
         }
 

@@ -21,3 +21,11 @@ Position=0,2,-50
 Forward=0,0,1
 Speed=5.0
 Sensitivity=0.001
+
+Trees
+Mesh=resources/Pine/pine.gem
+ModelType=STATIC
+Count=100
+MinScale=0.005
+MaxScale=0.02
+Radius=9000.0
