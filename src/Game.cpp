@@ -10,68 +10,66 @@
 #include <cmath>
 #include <memory>
 
-// Helper structure to store object data
-struct ObjectData {
-    std::string meshPath;
-    vec3 scale;
-    vec3 position;
-    std::string texture; // For objects like Skybox
-};
+// Helper function to parse a vec3 from a comma-separated string
+vec3 parseVec3(const std::string& str) {
+    std::istringstream stream(str);
+    std::string token;
+    float values[3] = { 0 };
+    int i = 0;
+    while (std::getline(stream, token, ',') && i < 3) {
+        values[i++] = std::stof(token);
+    }
+    return vec3(values[0], values[1], values[2]);
+}
 
-// Helper function to parse object data from file
-ObjectData parseObjectData(const std::string& filename, const std::string& objectName) {
+// Function to load level data from file
+void loadLevelData(
+    const std::string& filename,
+    std::string& trexMeshPath, ModelType& trexModelType, vec3& trexInitialPosition,
+    vec3& planeScale, std::string& skyboxTexturePath, float& skyboxRadius,
+    vec3& skylightDirection, float& skylightIntensity, vec3& skylightColor, vec3& ambientColor
+) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open data file: " + filename);
+        throw std::runtime_error("Failed to open level data file: " + filename);
     }
 
-    ObjectData data;
-    std::string line;
-    bool sectionFound = false;
-
+    std::string line, section;
     while (std::getline(file, line)) {
-        // Detect section
-        if (line == objectName) {
-            sectionFound = true;
-            continue;
+        if (line.empty() || line[0] == '#') continue; // Skip empty lines or comments
+
+        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting") {
+            section = line;
         }
-
-        // Parse data if in the correct section
-        if (sectionFound) {
-            if (line.empty()) break; // End of section
-
+        else {
             std::istringstream lineStream(line);
             std::string key, value;
             if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
-                if (key == "Mesh") {
-                    data.meshPath = value;
+                if (section == "T-Rex") {
+                    if (key == "Mesh") trexMeshPath = value;
+                    else if (key == "AnimationType") {
+                        trexModelType = (value == "ANIMATED") ? ModelType::ANIMATED : ModelType::STATIC;
+                    }
+                    else if (key == "InitialPosition") {
+                        trexInitialPosition = parseVec3(value);
+                    }
                 }
-                else if (key == "Scale") {
-                    std::replace(value.begin(), value.end(), ',', ' ');
-                    std::istringstream scaleStream(value);
-                    float x, y, z;
-                    scaleStream >> x >> y >> z;
-                    data.scale = vec3(x, y, z);
+                else if (section == "Plane") {
+                    if (key == "Scale") planeScale = parseVec3(value);
                 }
-                else if (key == "InitialPosition") {
-                    std::replace(value.begin(), value.end(), ',', ' ');
-                    std::istringstream posStream(value);
-                    float x, y, z;
-                    posStream >> x >> y >> z;
-                    data.position = vec3(x, y, z);
+                else if (section == "Skybox") {
+                    if (key == "Texture") skyboxTexturePath = value;
+                    else if (key == "Radius") skyboxRadius = std::stof(value);
                 }
-                else if (key == "Texture") {
-                    data.texture = value;
+                else if (section == "Lighting") {
+                    if (key == "SkyLightDirection") skylightDirection = parseVec3(value);
+                    else if (key == "SkyLightIntensity") skylightIntensity = std::stof(value);
+                    else if (key == "SkyLightColor") skylightColor = parseVec3(value);
+                    else if (key == "AmbientColor") ambientColor = parseVec3(value);
                 }
             }
         }
     }
-
-    if (!sectionFound) {
-        throw std::runtime_error("Section not found: " + objectName);
-    }
-
-    return data;
 }
 
 // Helper function to calculate distance between two 3D points
@@ -88,35 +86,7 @@ static float randomFloat(float min, float max) {
 struct TreeInstance {
     vec3 position;  // Position of the tree
     float scale;    // Scale of the tree
-};
-
-void loadTrexData(const std::string& filename, std::string& meshPath, ModelType& modelType, vec3& initialPosition) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open T-Rex data file: " + filename);
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream lineStream(line);
-        std::string key, value;
-        if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
-            if (key == "Mesh") {
-                meshPath = value;
-            }
-            else if (key == "AnimationType") {
-                modelType = (value == "ANIMATED") ? ModelType::ANIMATED : ModelType::STATIC;
-            }
-            else if (key == "InitialPosition") {
-                std::replace(value.begin(), value.end(), ',', ' ');
-                std::istringstream posStream(value);
-                float x, y, z;
-                posStream >> x >> y >> z;
-                initialPosition = vec3(x, y, z);
-            }
-        }
-    }
-}
+}; 
 
 // Generate a set of randomly placed trees within a specified circular area
 std::vector<TreeInstance> generateRandomTreesInRadius(
@@ -195,13 +165,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     bool cameraControlEnabled = true; // Camera control starts enabled
     ShowCursor(FALSE); // Start with cursor hidden
 
-    // Load T-Rex data from file
-    std::string trexMeshPath;
+    std::string trexMeshPath, skyboxTexturePath;
     ModelType trexModelType;
-    vec3 trexInitialPosition;
+    vec3 trexInitialPosition, planeScale, skylightDirection, skylightColor, ambientColor;
+    float skyboxRadius, skylightIntensity;
 
     try {
-        loadTrexData("level.txt", trexMeshPath, trexModelType, trexInitialPosition);
+        loadLevelData("level.txt", trexMeshPath, trexModelType, trexInitialPosition,
+            planeScale, skyboxTexturePath, skyboxRadius,
+            skylightDirection, skylightIntensity, skylightColor, ambientColor);
     }
     catch (const std::exception& e) {
         MessageBoxA(nullptr, e.what(), "Error", MB_ICONERROR);
@@ -220,7 +192,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
     // Initialize Skydome
     auto skydome = std::make_unique<Sphere>();
-    skydome->init(30, 30, 100.0f, *dx); // Large sphere for Skydome
+    skydome->init(30, 30, skyboxRadius, *dx); // Large sphere for Skydome
 
     // Initialize textures and shaders
     initializeTextures(*textureManager, *dx);
@@ -250,12 +222,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         trexAnimInstance.resetAnimationTime();
         trexAnimInstance.currentAnimation = "attack";
         });
-
-    // Lighting setup
-    vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
-    float skylightIntensity = 0.1f;                  // Slightly increased intensity
-    vec3 skylightColor = vec3(0.1f, 0.1f, 0.15f);     // Dark blue skylight color, slightly brighter
-    vec3 ambientColor = vec3(0.1f, 0.1f, 0.15f);     // Dim bluish-gray ambient light for overall visibility
 
     // Generate random trees within a large radius
     const int treeCount = 100;          // Number of trees

@@ -2,3 +2,16 @@ T-Rex
 Mesh=resources/TRex.gem
 AnimationType=ANIMATED
 InitialPosition=0,0,50
+
+Plane
+Scale=10,10,10
+
+Skybox
+Texture=resources/NightSkyHDRI001_4K-TONEMAPPED.jpg
+Radius=100
+
+Lighting
+SkyLightDirection=0,1,0
+SkyLightIntensity=0.1
+SkyLightColor=0.1,0.1,0.15
+AmbientColor=0.1,0.1,0.15
