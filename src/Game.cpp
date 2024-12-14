@@ -10,6 +10,70 @@
 #include <cmath>
 #include <memory>
 
+// Helper structure to store object data
+struct ObjectData {
+    std::string meshPath;
+    vec3 scale;
+    vec3 position;
+    std::string texture; // For objects like Skybox
+};
+
+// Helper function to parse object data from file
+ObjectData parseObjectData(const std::string& filename, const std::string& objectName) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open data file: " + filename);
+    }
+
+    ObjectData data;
+    std::string line;
+    bool sectionFound = false;
+
+    while (std::getline(file, line)) {
+        // Detect section
+        if (line == objectName) {
+            sectionFound = true;
+            continue;
+        }
+
+        // Parse data if in the correct section
+        if (sectionFound) {
+            if (line.empty()) break; // End of section
+
+            std::istringstream lineStream(line);
+            std::string key, value;
+            if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
+                if (key == "Mesh") {
+                    data.meshPath = value;
+                }
+                else if (key == "Scale") {
+                    std::replace(value.begin(), value.end(), ',', ' ');
+                    std::istringstream scaleStream(value);
+                    float x, y, z;
+                    scaleStream >> x >> y >> z;
+                    data.scale = vec3(x, y, z);
+                }
+                else if (key == "InitialPosition") {
+                    std::replace(value.begin(), value.end(), ',', ' ');
+                    std::istringstream posStream(value);
+                    float x, y, z;
+                    posStream >> x >> y >> z;
+                    data.position = vec3(x, y, z);
+                }
+                else if (key == "Texture") {
+                    data.texture = value;
+                }
+            }
+        }
+    }
+
+    if (!sectionFound) {
+        throw std::runtime_error("Section not found: " + objectName);
+    }
+
+    return data;
+}
+
 // Helper function to calculate distance between two 3D points
 static float calculateDistance(const vec3& a, const vec3& b) {
     return (a - b).getLength();
@@ -25,6 +89,34 @@ struct TreeInstance {
     vec3 position;  // Position of the tree
     float scale;    // Scale of the tree
 };
+
+void loadTrexData(const std::string& filename, std::string& meshPath, ModelType& modelType, vec3& initialPosition) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open T-Rex data file: " + filename);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream lineStream(line);
+        std::string key, value;
+        if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
+            if (key == "Mesh") {
+                meshPath = value;
+            }
+            else if (key == "AnimationType") {
+                modelType = (value == "ANIMATED") ? ModelType::ANIMATED : ModelType::STATIC;
+            }
+            else if (key == "InitialPosition") {
+                std::replace(value.begin(), value.end(), ',', ' ');
+                std::istringstream posStream(value);
+                float x, y, z;
+                posStream >> x >> y >> z;
+                initialPosition = vec3(x, y, z);
+            }
+        }
+    }
+}
 
 // Generate a set of randomly placed trees within a specified circular area
 std::vector<TreeInstance> generateRandomTreesInRadius(
@@ -103,9 +195,22 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     bool cameraControlEnabled = true; // Camera control starts enabled
     ShowCursor(FALSE); // Start with cursor hidden
 
-    // Load models
+    // Load T-Rex data from file
+    std::string trexMeshPath;
+    ModelType trexModelType;
+    vec3 trexInitialPosition;
+
+    try {
+        loadTrexData("level.txt", trexMeshPath, trexModelType, trexInitialPosition);
+    }
+    catch (const std::exception& e) {
+        MessageBoxA(nullptr, e.what(), "Error", MB_ICONERROR);
+        return -1;
+    }
+
+    // Load T-Rex model
     auto trex = std::make_unique<Model>();
-    trex->init("resources/TRex.gem", *dx, ModelType::ANIMATED);
+    trex->init(trexMeshPath, *dx, trexModelType);
 
     auto pine = std::make_unique<Model>();
     pine->init("resources/Pine/pine.gem", *dx, ModelType::STATIC);
@@ -127,7 +232,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex->animation;
-    vec3 trexPosition = vec3(0, 0, 50); // Initial position of T-Rex
+    vec3 trexPosition = trexInitialPosition; // Initial position of T-Rex
 
     // Animation controller setup
     AnimationController animationController;
@@ -227,7 +332,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         directionToCamera = directionToCamera.normalize();
 
         // Calculate T-Rex orientation towards the camera
-        vec3 directionToCamera = (camera->position - trexPosition).normalize();
         vec3 forwardDirection(0, 0, 1); // Default forward direction
         float rotationAngle = acosf(forwardDirection.dot(directionToCamera));
         if (forwardDirection.cross(directionToCamera).y < 0) {

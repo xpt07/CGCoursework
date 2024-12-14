@@ -1,0 +1,4 @@
+T-Rex
+Mesh=resources/TRex.gem
+AnimationType=ANIMATED
+InitialPosition=0,0,50
