@@ -22,23 +22,24 @@ vec3 parseVec3(const std::string& str) {
     return vec3(values[0], values[1], values[2]);
 }
 
-// Function to load level data from file
-void loadLevelData(
+bool loadLevelData(
     const std::string& filename,
     std::string& trexMeshPath, ModelType& trexModelType, vec3& trexInitialPosition,
     vec3& planeScale, std::string& skyboxTexturePath, float& skyboxRadius,
-    vec3& skylightDirection, float& skylightIntensity, vec3& skylightColor, vec3& ambientColor
+    vec3& skylightDirection, float& skylightIntensity, vec3& skylightColor, vec3& ambientColor,
+    vec3& cameraPosition, vec3& cameraForward, float& cameraSpeed, float& cameraSensitivity
 ) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open level data file: " + filename);
+        MessageBoxA(nullptr, ("Failed to open level data file: " + filename).c_str(), "Error", MB_ICONERROR);
+        return false;
     }
 
     std::string line, section;
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '#') continue; // Skip empty lines or comments
 
-        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting") {
+        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting" || line == "Camera") {
             section = line;
         }
         else {
@@ -67,9 +68,17 @@ void loadLevelData(
                     else if (key == "SkyLightColor") skylightColor = parseVec3(value);
                     else if (key == "AmbientColor") ambientColor = parseVec3(value);
                 }
+                else if (section == "Camera") {
+                    if (key == "Position") cameraPosition = parseVec3(value);
+                    else if (key == "Forward") cameraForward = parseVec3(value).normalize();
+                    else if (key == "Speed") cameraSpeed = std::stof(value);
+                    else if (key == "Sensitivity") cameraSensitivity = std::stof(value);
+                }
             }
         }
     }
+
+    return true; // Successful parsing
 }
 
 // Helper function to calculate distance between two 3D points
@@ -152,7 +161,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     auto win = std::make_unique<Window>();
     auto shaderManager = std::make_unique<ShaderManager>();
     auto timer = std::make_unique<Timer>();
-    auto camera = std::make_unique<Camera>(vec3(0, 2, -50));
     auto textureManager = std::make_unique<TextureManager>();
 
     // Random seed for tree placement
@@ -165,20 +173,23 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     bool cameraControlEnabled = true; // Camera control starts enabled
     ShowCursor(FALSE); // Start with cursor hidden
 
+    // Level data variables
     std::string trexMeshPath, skyboxTexturePath;
     ModelType trexModelType;
     vec3 trexInitialPosition, planeScale, skylightDirection, skylightColor, ambientColor;
-    float skyboxRadius, skylightIntensity;
+    vec3 cameraPosition, cameraForward;
+    float skyboxRadius, skylightIntensity, cameraSpeed, cameraSensitivity;
 
-    try {
-        loadLevelData("level.txt", trexMeshPath, trexModelType, trexInitialPosition,
-            planeScale, skyboxTexturePath, skyboxRadius,
-            skylightDirection, skylightIntensity, skylightColor, ambientColor);
+    // Load level data
+    if (!loadLevelData("level.txt", trexMeshPath, trexModelType, trexInitialPosition,
+        planeScale, skyboxTexturePath, skyboxRadius,
+        skylightDirection, skylightIntensity, skylightColor, ambientColor,
+        cameraPosition, cameraForward, cameraSpeed, cameraSensitivity)) {
+        return -1; // Exit if loading fails
     }
-    catch (const std::exception& e) {
-        MessageBoxA(nullptr, e.what(), "Error", MB_ICONERROR);
-        return -1;
-    }
+
+    // Initialize camera with loaded parameters
+    auto camera = std::make_unique<Camera>(cameraPosition, cameraForward, cameraSpeed, cameraSensitivity);
 
     // Load T-Rex model
     auto trex = std::make_unique<Model>();
@@ -199,7 +210,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     initializeShaders(*shaderManager, *dx);
 
     // HDRI texture for Skydome
-    ID3D11ShaderResourceView* skydomeTexture = textureManager->find("resources/NightSkyHDRI001_4K-TONEMAPPED.jpg");
+    ID3D11ShaderResourceView* skydomeTexture = textureManager->find(skyboxTexturePath);
 
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;

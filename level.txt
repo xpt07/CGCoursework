@@ -15,3 +15,9 @@ SkyLightDirection=0,1,0
 SkyLightIntensity=0.1
 SkyLightColor=0.1,0.1,0.15
 AmbientColor=0.1,0.1,0.15
+
+Camera
+Position=0,2,-50
+Forward=0,0,1
+Speed=5.0
+Sensitivity=0.001
