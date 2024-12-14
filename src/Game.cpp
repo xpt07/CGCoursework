@@ -10,6 +10,88 @@
 #include <cmath>
 #include <memory>
 
+// Helper function to parse a vec3 from a comma-separated string
+vec3 parseVec3(const std::string& str) {
+    std::istringstream stream(str);
+    std::string token;
+    float values[3] = { 0 };
+    int i = 0;
+    while (std::getline(stream, token, ',') && i < 3) {
+        values[i++] = std::stof(token);
+    }
+    return vec3(values[0], values[1], values[2]);
+}
+
+bool loadLevelData(
+    const std::string& filename,
+    std::string& trexMeshPath, ModelType& trexModelType, vec3& trexInitialPosition,
+    vec3& planeScale, std::string& skyboxTexturePath, float& skyboxRadius,
+    vec3& skylightDirection, float& skylightIntensity, vec3& skylightColor, vec3& ambientColor,
+    vec3& cameraPosition, vec3& cameraForward, float& cameraSpeed, float& cameraSensitivity,
+    std::string& pineMeshPath, ModelType& pineModelType, int& treeCount, float& treeMinScale, float& treeMaxScale, float& treeRadius
+) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        MessageBoxA(nullptr, ("Failed to open level data file: " + filename).c_str(), "Error", MB_ICONERROR);
+        return false;
+    }
+
+    std::string line, section;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue; // Skip empty lines or comments
+
+        if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting" || line == "Camera" || line == "Trees") {
+            section = line;
+        }
+        else {
+            std::istringstream lineStream(line);
+            std::string key, value;
+            if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
+                if (section == "T-Rex") {
+                    if (key == "Mesh") trexMeshPath = value;
+                    else if (key == "AnimationType") {
+                        trexModelType = (value == "ANIMATED") ? ModelType::ANIMATED : ModelType::STATIC;
+                    }
+                    else if (key == "InitialPosition") {
+                        trexInitialPosition = parseVec3(value);
+                    }
+                }
+                else if (section == "Plane") {
+                    if (key == "Scale") planeScale = parseVec3(value);
+                }
+                else if (section == "Skybox") {
+                    if (key == "Texture") skyboxTexturePath = value;
+                    else if (key == "Radius") skyboxRadius = std::stof(value);
+                }
+                else if (section == "Lighting") {
+                    if (key == "SkyLightDirection") skylightDirection = parseVec3(value);
+                    else if (key == "SkyLightIntensity") skylightIntensity = std::stof(value);
+                    else if (key == "SkyLightColor") skylightColor = parseVec3(value);
+                    else if (key == "AmbientColor") ambientColor = parseVec3(value);
+                }
+                else if (section == "Camera") {
+                    if (key == "Position") cameraPosition = parseVec3(value);
+                    else if (key == "Forward") cameraForward = parseVec3(value).normalize();
+                    else if (key == "Speed") cameraSpeed = std::stof(value);
+                    else if (key == "Sensitivity") cameraSensitivity = std::stof(value);
+                }
+                else if (section == "Trees") {
+                    if (key == "Mesh") pineMeshPath = value;
+                    else if (key == "ModelType") {
+                        pineModelType = (value == "STATIC") ? ModelType::STATIC : ModelType::ANIMATED;
+                    }
+                    else if (key == "Count") treeCount = std::stoi(value);
+                    else if (key == "MinScale") treeMinScale = std::stof(value);
+                    else if (key == "MaxScale") treeMaxScale = std::stof(value);
+                    else if (key == "Radius") treeRadius = std::stof(value);
+                }
+            }
+        }
+    }
+
+    return true; // Successful parsing
+}
+
 // Helper function to calculate distance between two 3D points
 static float calculateDistance(const vec3& a, const vec3& b) {
     return (a - b).getLength();
@@ -24,7 +106,7 @@ static float randomFloat(float min, float max) {
 struct TreeInstance {
     vec3 position;  // Position of the tree
     float scale;    // Scale of the tree
-};
+}; 
 
 // Generate a set of randomly placed trees within a specified circular area
 std::vector<TreeInstance> generateRandomTreesInRadius(
@@ -90,7 +172,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     auto win = std::make_unique<Window>();
     auto shaderManager = std::make_unique<ShaderManager>();
     auto timer = std::make_unique<Timer>();
-    auto camera = std::make_unique<Camera>(vec3(0, 2, -50));
     auto textureManager = std::make_unique<TextureManager>();
 
     // Random seed for tree placement
@@ -103,31 +184,52 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
     bool cameraControlEnabled = true; // Camera control starts enabled
     ShowCursor(FALSE); // Start with cursor hidden
 
-    // Load models
+    // Level data variables
+    std::string trexMeshPath, skyboxTexturePath, pineMeshPath;
+    ModelType trexModelType, pineModelType;
+    vec3 trexInitialPosition, planeScale, skylightDirection, skylightColor, ambientColor;
+    vec3 cameraPosition, cameraForward;
+    int treeCount = 0;
+    float skyboxRadius, skylightIntensity, cameraSpeed, cameraSensitivity;
+    float treeMinScale, treeMaxScale, treeRadius;
+
+    // Load level data
+    if (!loadLevelData("level.txt", trexMeshPath, trexModelType, trexInitialPosition,
+        planeScale, skyboxTexturePath, skyboxRadius,
+        skylightDirection, skylightIntensity, skylightColor, ambientColor,
+        cameraPosition, cameraForward, cameraSpeed, cameraSensitivity,
+        pineMeshPath, pineModelType, treeCount, treeMinScale, treeMaxScale, treeRadius)) {
+        return -1; // Exit if loading fails
+    }
+
+    // Initialize camera with loaded parameters
+    auto camera = std::make_unique<Camera>(cameraPosition, cameraForward, cameraSpeed, cameraSensitivity);
+
+    // Load T-Rex model
     auto trex = std::make_unique<Model>();
-    trex->init("resources/TRex.gem", *dx, ModelType::ANIMATED);
+    trex->init(trexMeshPath, *dx, trexModelType);
 
     auto pine = std::make_unique<Model>();
-    pine->init("resources/Pine/pine.gem", *dx, ModelType::STATIC);
+    pine->init(pineMeshPath, *dx, pineModelType);
 
     auto plane = std::make_unique<Plane>();
     plane->init(*dx);
 
     // Initialize Skydome
     auto skydome = std::make_unique<Sphere>();
-    skydome->init(30, 30, 100.0f, *dx); // Large sphere for Skydome
+    skydome->init(30, 30, skyboxRadius, *dx); // Large sphere for Skydome
 
     // Initialize textures and shaders
     initializeTextures(*textureManager, *dx);
     initializeShaders(*shaderManager, *dx);
 
     // HDRI texture for Skydome
-    ID3D11ShaderResourceView* skydomeTexture = textureManager->find("resources/NightSkyHDRI001_4K-TONEMAPPED.jpg");
+    ID3D11ShaderResourceView* skydomeTexture = textureManager->find(skyboxTexturePath);
 
     // Initialize T-Rex animation
     AnimationInstance trexAnimInstance;
     trexAnimInstance.animation = &trex->animation;
-    vec3 trexPosition = vec3(0, 0, 50); // Initial position of T-Rex
+    vec3 trexPosition = trexInitialPosition; // Initial position of T-Rex
 
     // Animation controller setup
     AnimationController animationController;
@@ -146,18 +248,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         trexAnimInstance.currentAnimation = "attack";
         });
 
-    // Lighting setup
-    vec3 skylightDirection = vec3(0.0f, 1.0f, 0.0f); // Downward
-    float skylightIntensity = 0.1f;                  // Slightly increased intensity
-    vec3 skylightColor = vec3(0.1f, 0.1f, 0.15f);     // Dark blue skylight color, slightly brighter
-    vec3 ambientColor = vec3(0.1f, 0.1f, 0.15f);     // Dim bluish-gray ambient light for overall visibility
-
-    // Generate random trees within a large radius
-    const int treeCount = 100;          // Number of trees
-    const float radius = 9000.0f;        // Radius of the circular area
-    const float minTreeScale = 0.005f; // Minimum tree size
-    const float maxTreeScale = 0.02f;  // Maximum tree size
-    std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, minTreeScale, maxTreeScale, radius);
+    // Generate trees based on loaded parameters
+    std::vector<TreeInstance> trees = generateRandomTreesInRadius(treeCount, treeMinScale, treeMaxScale, treeRadius);
 
     Matrix worldMatrix;
 
@@ -191,7 +283,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         worldMatrix =  Matrix::translation(vec3(camera->position));
         shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "VP", &VP);
-        shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx); // Bind HDRI texture
+        shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx);
         shaderManager->applyShader("shaderSkydome", *dx);
         skydome->geometry.draw(*dx);
 
@@ -227,10 +319,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         directionToCamera = directionToCamera.normalize();
 
         // Calculate T-Rex orientation towards the camera
-        vec3 directionToCamera = (camera->position - trexPosition).normalize();
-        vec3 forwardDirection(0, 0, 1); // Default forward direction
-        float rotationAngle = acosf(forwardDirection.dot(directionToCamera));
-        if (forwardDirection.cross(directionToCamera).y < 0) {
+        float rotationAngle = acosf(cameraForward.dot(directionToCamera));
+        if (cameraForward.cross(directionToCamera).y < 0) {
             rotationAngle = -rotationAngle; // Adjust rotation for clockwise/counterclockwise
         }
 
