@@ -283,7 +283,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
         worldMatrix =  Matrix::translation(vec3(camera->position));
         shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "W", &worldMatrix);
         shaderManager->getShader("shaderSkydome")->updateConstantVS("staticMeshBuffer", "VP", &VP);
-        shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx); // Bind HDRI texture
+        shaderManager->getShader("shaderSkydome")->updateTexturePS("skyTex", skydomeTexture, *dx);
         shaderManager->applyShader("shaderSkydome", *dx);
         skydome->geometry.draw(*dx);
 
