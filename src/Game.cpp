@@ -11,6 +11,7 @@
 #include <memory>
 
 // Helper function to parse a vec3 from a comma-separated string
+// This splits a string like "x,y,z" into a vec3.
 vec3 parseVec3(const std::string& str) {
     std::istringstream stream(str);
     std::string token;
@@ -22,6 +23,8 @@ vec3 parseVec3(const std::string& str) {
     return vec3(values[0], values[1], values[2]);
 }
 
+// Loads the level data from a .txt file.
+// It initializes the paths, settings, and attributes of all game objects like T-Rex, trees, camera, etc.
 bool loadLevelData(
     const std::string& filename,
     std::string& trexMeshPath, ModelType& trexModelType, vec3& trexInitialPosition,
@@ -38,8 +41,9 @@ bool loadLevelData(
 
     std::string line, section;
     while (std::getline(file, line)) {
-        if (line.empty() || line[0] == '#') continue; // Skip empty lines or comments
+        if (line.empty()) continue; // Skip empty lines
 
+        // Determine which section of the file we're in
         if (line == "T-Rex" || line == "Plane" || line == "Skybox" || line == "Lighting" || line == "Camera" || line == "Trees") {
             section = line;
         }
@@ -47,6 +51,7 @@ bool loadLevelData(
             std::istringstream lineStream(line);
             std::string key, value;
             if (std::getline(lineStream, key, '=') && std::getline(lineStream, value)) {
+                // Assign values based on the current section
                 if (section == "T-Rex") {
                     if (key == "Mesh") trexMeshPath = value;
                     else if (key == "AnimationType") {
@@ -89,7 +94,7 @@ bool loadLevelData(
         }
     }
 
-    return true; // Successful parsing
+    return true; // Successful loaded level data
 }
 
 // Helper function to calculate distance between two 3D points
